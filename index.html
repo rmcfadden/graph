@@ -3,13 +3,11 @@
       <script src="build/graph.js"></script>
   </head>
 
-  <body onresize="resizeCanvas(); graph.draw();">
-    <div id="wrapper">
-        <canvas id="canvas"></canvas>
-    </div>    
+  <body>
+    <div id="graph"></div>    
     <style>
       body { padding: 0; margin: 0}
-      #canvas {
+      #canvas-graph {
         display: block;
         width: 100%;
         height: 100%;
@@ -18,18 +16,15 @@
     <script>
 
     window.addEventListener('load', function () {
-
-  console.log(Graph);
-
-      window.graph = new Graph({id: "canvas"});
-      graph.draw();
+      window.graph = new Graph({id: "graph"});
+      resizeCanvas();
     }, false);
   
     // TODO: move to Graph module
     var resizeCanvas = function() {
       const pixelRatio = window.devicePixelRatio || 1;
-      const wrapper = document.getElementById("wrapper");
-      const canvas = document.getElementById("canvas");
+      const wrapper = document.getElementById("graph");
+      //const canvas = document.getElementById("canvas");
 
       // The viewport is in portrait mode, so var width should be based off viewport WIDTH
       // Makes the canvas 100% of the viewport width
@@ -46,7 +41,6 @@
       //const height = width;
       const height  = Math.round(1.0 * window.innerHeight);
 
-
       //This will be used to downscale the canvas element when devicePixelRatio > 1
       wrapper.style.position = "relative";
       wrapper.style.width = width + "px";
@@ -54,9 +48,12 @@
 
       //wrapper.style.top = (window.innerHeight - width) / 2;
       //wrapper.style.left = (window.innerWidth - width) / 2;
+      
+      let canvas = document.getElementById("canvas-graph");
 
       canvas.width = width * pixelRatio;
       canvas.height = height * pixelRatio;  
+      window.graph.draw();
     }
 
     resizeCanvas();

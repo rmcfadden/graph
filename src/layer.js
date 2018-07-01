@@ -16,6 +16,7 @@ export default class Layer {
       const {xAxis, yAxis} = this.calcs;
       return Utils.isBetween(p.x, xAxis.start, xAxis.end) && Utils.isBetween(p.y, yAxis.start, yAxis.end);
     }
+
     this.isInScreenBounds = (p) => {
       const {xAxis, yAxis} = this.calcs;
 console.log('Calcs:');           
@@ -29,12 +30,13 @@ console.log(`----------------------`);
       return Utils.isBetween(p.x, this.xToScreen(xAxis.start), this.xToScreen(xAxis.end)) 
         && Utils.isBetween(p.y,  this.yToScreen(yAxis.end), this.yToScreen(yAxis.start));
     };
-
   }
 
-  draw() {        
-    this.canvas = document.getElementById(this.graph.id);
-    this.context = canvas.getContext("2d");
+  draw() {
+    if(!this.graph) { throw new Error('this.graph cannot be empty'); }
+    if(!this.graph.canvasId) { throw new Error('this.graph.canvasId cannot be empty'); }
+    this.canvas = document.getElementById(this.graph.canvasId);
+    this.context = this.canvas.getContext("2d");
     this.preCalculations();
     this.drawBackground();
     this.drawAxes();
