@@ -7,17 +7,13 @@ export default class Graph {
     if(!args) { throw new Error("args must be defined"); }
     if(!args.id) { throw new Error("args.id must be defined"); }        
     this.id = args.id;
-    this.canvasId = `canvas-${this.id}`;
-    this.layers = { "default" : new Layer(this) };
-    this.config = new Config();  
+    this.config = new Config();
 
-    let element = document.getElementById(args.id);
-    element.innerHTML = `<canvas id='${this.canvasId}'></canvas>`;
-
+    this.view = new View();
     this.draw();
   }
 
   draw() {
-    Object.keys(this.layers).forEach( x => this.layers[x].draw());
+    this.view.draw();
   }
 };
