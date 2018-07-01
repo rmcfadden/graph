@@ -2,8 +2,8 @@ import Axis from "./axis";
 import Utils from "./utils";
 
 export default class Layer {
-  constructor(graph) {
-    this.graph = graph;
+  constructor(view) {
+    this.graph = view.graph;
     this.convas = null;
     this.context = null;
     this.calcs = {};        
@@ -19,6 +19,7 @@ export default class Layer {
 
     this.isInScreenBounds = (p) => {
       const {xAxis, yAxis} = this.calcs;
+/*
 console.log('Calcs:');           
 console.log(this.calcs);           
 console.log(`x: ${p.x}, y: ${p.y}`);
@@ -27,6 +28,7 @@ console.log(`start y1: ${this.yToScreen(yAxis.start)}, end y2: ${this.yToScreen(
 console.log(`x1: ${xAxis.start}, x2: ${xAxis.end}`);
 console.log(`y1: ${yAxis.start}, y2: ${yAxis.end}`);
 console.log(`----------------------`);
+*/
       return Utils.isBetween(p.x, this.xToScreen(xAxis.start), this.xToScreen(xAxis.end)) 
         && Utils.isBetween(p.y,  this.yToScreen(yAxis.end), this.yToScreen(yAxis.start));
     };

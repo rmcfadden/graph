@@ -1,4 +1,3 @@
-import Layer from "./layer";
 import Config from "./config";
 import View from "./view";
 
@@ -9,7 +8,7 @@ export default class Graph {
     this.id = args.id;
     this.config = new Config();
 
-    this.view = new View();
+    this.view = new View(this);
     this.draw();
   }
 
