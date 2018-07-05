@@ -9,5 +9,6 @@ export default class Axis {
     this.style = "black";
     this.majorGrid = new GridLines({ step : .5, style: "darkgrey", showLabels: true });
     this.minorGrid = new GridLines({ step :.1, style: "lightgrey" });
+    this.offset = 0;
   }
 }

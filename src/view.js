@@ -98,7 +98,6 @@ console.log(xAxis);
   }
 
   draw() {
-
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     Object.keys(this.layers).forEach( x => this.layers[x].draw());
@@ -108,7 +107,7 @@ console.log(xAxis);
     const left = this.canvas.width - (m + l);
     this.drawSvgImage(ZoomInSvg,left,m,l,l);
     this.drawSvgImage(ZoomOutSvg,left,l + m,l,l);    
-    this.drawSvgImage(SettingsSvg,left,(l * 2) + m,l,l);        
+    this.drawSvgImage(SettingsSvg,left,(l * 2) + m,l,l);
   }
 
   drawSvgImage(src,x,y,w,h){
