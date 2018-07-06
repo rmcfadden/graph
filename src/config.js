@@ -1,7 +1,7 @@
 import Axis from "./axis";
 
 export default class Config {
-  constructor(args) {
+  constructor() {
     this.title = "";
     this.borderStyle = "black";
     this.borderWidth = 1;

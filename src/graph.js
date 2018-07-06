@@ -15,4 +15,4 @@ export default class Graph {
   draw() {
     this.view.draw();
   }
-};
+}

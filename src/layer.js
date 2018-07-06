@@ -1,4 +1,3 @@
-import Axis from "./axis";
 import Utils from "./utils";
 
 export default class Layer {
@@ -6,7 +5,7 @@ export default class Layer {
     this.view = view;
     this.graph = view.graph;
     this.canvas = this.view.canvas;
-    this.context = this.view.context;
+    this.ctx = this.view.ctx;
     this.calcs = {};        
     this.xToScreen = (x) => this.calcs.xScale * (x + this.calcs.xOffset);
     this.yToScreen = (y) => this.calcs.yScale * (this.calcs.yOffset - y);
@@ -36,31 +35,34 @@ export default class Layer {
   drawBackground() {
     const { backgroundStyle, borderStyle, borderWidth } = this.graph.config;
     const { width, height} = this.canvas;
-    const { context } = this;
+    const { ctx } = this;
     
-    context.fillStyle = backgroundStyle;
-    context.fillRect(0, 0, width, height);
-    context.strokeStyle = borderStyle;
-    context.lineWidth = borderWidth;
-    context.strokeRect(0, 0, width, height);  
+    ctx.fillStyle = backgroundStyle;
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = borderStyle;
+    ctx.lineWidth = borderWidth;
+    ctx.strokeRect(0, 0, width, height);  
   }
 
   preCalculations() {
     const { config } = this.graph;
     const { width, height} = this.canvas;
-
-    const xAxis = config.axes.x;
-    const yAxis = config.axes.y;        
-    const xDistance = Utils.distance(xAxis.start, xAxis.end);
+    const { x: xAxis, y: yAxis} = config.axes;
+    
+    const xStart = xAxis.getAdjustedStart();
+    const xEnd = xAxis.getAdjustedEnd();    
+    
+    const xDistance = Utils.distance(xStart, xEnd);
+    
     const xMid = xDistance / 2;
     const yDistance = Utils.distance(yAxis.start, yAxis.end);
     const yMid = yDistance / 2;
     const xScale = width / xDistance;
     const yScale = height / yDistance;
-    const xOffset = xDistance - xAxis.end;
+    const xOffset = xDistance - xEnd;
     const yOffset = yDistance + yAxis.start;
 
-    const xRange = Utils.range(xAxis.start, xAxis.end, xAxis.majorGrid.step);
+    const xRange = Utils.range(xStart, xEnd, xAxis.majorGrid.step);
     const yRange = Utils.range(yAxis.start, yAxis.end, yAxis.majorGrid.step);          
     const xRangeAdjusted = Utils.offsetRangeToClosest(xRange, 0);
     const yRangeAdjusted = Utils.offsetRangeToClosest(yRange, 0);
@@ -96,10 +98,10 @@ export default class Layer {
 
   drawAxes() {
     const { config } = this.graph;
-    const { context } = this;
-    const { width, height, xAxis, yAxis, xMid, yMid, xDistance, yDistance,xOffset, yOffset } = this.calcs;
+    const { ctx } = this;
+    const { xAxis, yAxis } = this.calcs;
  
-    context.lineWidth = xAxis.width;
+    ctx.lineWidth = xAxis.width;
 
     // Draw gridlines/rulers
     this.drawGrid({xAxis: xAxis, yAxis: yAxis, isMajor: false});  
@@ -109,23 +111,23 @@ export default class Layer {
     this.drawGrid({xAxis: xAxis, yAxis: yAxis, axisDirection: "y"}); 
 
     // Draw origin
-    context.beginPath();
-    context.strokeStyle = xAxis.style || config.borderStyle;        
-    context.lineWidth = 1;
+    ctx.beginPath();
+    ctx.strokeStyle = xAxis.style || config.borderStyle;        
+    ctx.lineWidth = 1;
     const adjust = this.adjust;
 
-    context.moveTo(adjust(this.xToScreen(xAxis.start)),adjust(this.yToScreen(0)));        
-    context.lineTo(adjust(this.xToScreen(xAxis.end)),adjust(this.yToScreen(0)));        
+    ctx.moveTo(adjust(this.xToScreen(xAxis.start)),adjust(this.yToScreen(0)));        
+    ctx.lineTo(adjust(this.xToScreen(xAxis.end)),adjust(this.yToScreen(0)));        
     
-    context.moveTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.start)));        
-    context.lineTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.end)));        
-    context.stroke();
+    ctx.moveTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.start)));        
+    ctx.lineTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.end)));        
+    ctx.stroke();
   }
 
   drawGrid({xAxis, yAxis, axisDirection = "x", isMajor = true} = {}) {
     const { config } = this.graph;
-    const { context, canvas } = this;
-    const { xMid, yMid, xRangeAdjusted, yRangeAdjusted, xRangeMinorAdjusted, yRangeMinorAdjusted} = this.calcs; 
+    const { ctx } = this;
+    const { xRangeAdjusted, yRangeAdjusted, xRangeMinorAdjusted, yRangeMinorAdjusted} = this.calcs; 
 
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ?  xAxis : yAxis;
@@ -134,14 +136,14 @@ export default class Layer {
     const textHeight = grid.textHeight;
 
     if(grid.show) {
-      const originOffset = ((isXAxis ? xMid : yMid) % 1);
+//      const originOffset = ((isXAxis ? xMid : yMid) % 1);
       const range = isXAxis ? 
         (isMajor ? xRangeAdjusted : xRangeMinorAdjusted) : 
         (isMajor ? yRangeAdjusted : yRangeMinorAdjusted);
-      const distance = Utils.distance(axis.start, axis.end);  
-      context.beginPath();
-      context.strokeStyle = grid.style || config.borderStyle;
-      context.lineWidth  = 1;
+      //const distance = Utils.distance(axis.start, axis.end);  
+      ctx.beginPath();
+      ctx.strokeStyle = grid.style || config.borderStyle;
+      ctx.lineWidth  = 1;
       const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
 
       const rulerLength = textHeight  / ((isMajor) ? 2.0 : 4.0);
@@ -160,25 +162,25 @@ export default class Layer {
         const yEnd = isXAxis ? end : fixed;              
         const adjust = this.adjust;
 
-        context.moveTo(adjust(xStart),adjust(yStart));
-        context.lineTo(adjust(xEnd), adjust(yEnd));
+        ctx.moveTo(adjust(xStart),adjust(yStart));
+        ctx.lineTo(adjust(xEnd), adjust(yEnd));
       });
-      context.stroke();
+      ctx.stroke();
 
       // Draw horizontal labels
-      context.strokeStyle = config.backgroundStyle;
-      context.fillStyle = grid.labelStyle;
+      ctx.strokeStyle = config.backgroundStyle;
+      ctx.fillStyle = grid.labelStyle;
       
       let previousX = null;
       let mod = 1;
       
       range.forEach((p,i) => {
 //console.log(`p: ${p}, i % modulus = ${(i % modolus)}`);
-        const dashWidth = context.measureText('-').width / 2.0;
+        const dashWidth = ctx.measureText('-').width / 2.0;
         if((i % mod) !== 0) { return; }
         if(grid.showLabels){
           if(isXAxis){
-            const textMetrics = context.measureText(p);
+            const textMetrics = ctx.measureText(p);
             let xTextOffset =  (textMetrics.width / 2.0);
             if(p < 0){
               xTextOffset += dashWidth;
@@ -189,16 +191,16 @@ export default class Layer {
             }
 
             const yTextOffset =  -1 * textHeight;                                          
-            context.lineWidth  = 4; // StrokeWidth                  
-            context.font = `${textHeight}px Arial`;                  
+            ctx.lineWidth  = 4; // StrokeWidth                  
+            ctx.font = `${textHeight}px Arial`;                  
             
             const currentX = this.xToScreen(p) - xTextOffset;
             const currentY = this.yToScreen(0) - yTextOffset
 
             if(this.isInScreenBounds({ x: currentX, y: currentY }) && 
               this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
-              context.strokeText(p, currentX, currentY);
-              context.fillText(p, currentX, currentY);
+                ctx.strokeText(p, currentX, currentY);
+                ctx.fillText(p, currentX, currentY);
             }
             previousX = currentX;
           }

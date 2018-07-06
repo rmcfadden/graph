@@ -1,4 +1,4 @@
-import GridLines from "./GridLines";
+import GridLines from "./gridlines";
 
 export default class Axis {
   constructor({ start = -5.5, end = 5.5 } = {}) {
@@ -10,5 +10,8 @@ export default class Axis {
     this.majorGrid = new GridLines({ step : .5, style: "darkgrey", showLabels: true });
     this.minorGrid = new GridLines({ step :.1, style: "lightgrey" });
     this.offset = 0;
+  
+    this.getAdjustedStart = () => this.start + this.offset;
+    this.getAdjustedEnd = () => this.end + this.offset;    
   }
 }

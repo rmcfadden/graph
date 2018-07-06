@@ -15,7 +15,7 @@ export default class View {
     graphElement.innerHTML = `<canvas id='${this.graph.canvasId}'></canvas>`;
 
     this.canvas = document.getElementById(this.graph.canvasId);
-    this.context = this.canvas.getContext("2d");
+    this.ctx = this.canvas.getContext("2d");
 
 
     this.layers = { "default" : new Layer(this) };    
@@ -82,9 +82,10 @@ console.log(xAxis);
     // TODO: Currently only support full width
     let graphElement = document.getElementById(this.graph.id);        
     const pixelRatio = window.devicePixelRatio || 1;
-    const realWidth = window.innerHeight > window.innerWidth ?
-    Math.round(1.0 * window.innerWidth) :
-    Math.round(1.0 * window.innerHeight);
+
+//    const realWidth = window.innerHeight > window.innerWidth ?
+  ///  Math.round(1.0 * window.innerWidth) :
+   // Math.round(1.0 * window.innerHeight);
 
     const width = Math.round(1.0 * window.innerWidth);
     const height  = Math.round(1.0 * window.innerHeight);
@@ -98,7 +99,7 @@ console.log(xAxis);
   }
 
   draw() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     Object.keys(this.layers).forEach( x => this.layers[x].draw());
 
