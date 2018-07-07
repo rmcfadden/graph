@@ -17,7 +17,6 @@ export default class View {
     this.canvas = document.getElementById(this.graph.canvasId);
     this.ctx = this.canvas.getContext("2d");
 
-
     this.layers = { "default" : new Layer(this) };    
     this.graph.canvasId = `canvas-${graph.id}`;
 
@@ -26,16 +25,23 @@ export default class View {
       const {x, y} = this.lastCoords;
       const startX = e.offsetX - x;
       const startY = e.offsetY - y;
-console.log(`startX: ${startX}, startY: ${startY}`);
       this.startCoords = { x : startX, y: startY };
+    }
+
+    this.canvas.onmouseup = (e) => {
+      this.isMouseDown = false;
+      const {x, y} = this.startCoords;
+      const lastX = e.offsetX - x;
+      const lastY = e.offsetY - y;
+      this.lastCoords = { x : lastX, y: lastY };
     }
 
     graphElement.onmousemove = (e) => {
       if(!this.isMouseDown) { return; }      
 
       const {x, y} = this.startCoords;
-      const diffX =  e.offsetX - x;
-      const diffY =  e.offsetX - y;
+      const diffX =  (x - e.offsetX) * -1;
+      const diffY =  y - e.offsetY;
       
       const calcs = this.getSelectedLayer().calcs;
       const { xDistance, yDistance, width, height } = calcs;
@@ -44,32 +50,25 @@ console.log(`startX: ${startX}, startY: ${startY}`);
       const changeY = diffY / height;
       const offsetX = xDistance * changeX;
       const offsetY = yDistance * changeY;
-      
+/*
 console.log(`diffX: ${diffX}, diffY: ${diffY}`);      
 console.log(`changeX: ${changeX}, changeY: ${changeY}`);      
 console.log(`xDistance: ${xDistance}, yDistance: ${yDistance}`);
+*/
+
 console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}`);      
 
       let xAxis = this.graph.config.axes.x;
       xAxis.offset = offsetX;
 
-console.log(xAxis);
+      let yAxis = this.graph.config.axes.y;
+      yAxis.offset = offsetY;
 
       this.draw();
     }
 
     this.getSelectedLayer = () => this.layers.default; // default for now
-
-    this.canvas.onmouseup = (e) => {
-      this.isMouseDown = false;
-      const {x, y} = this.startCoords;
-      const lastX = e.offsetX - x;
-      const lastY = e.offsetY - y;
-
-      this.lastCoords = { x : lastX, y: lastY };
-    }
-
-
+    
     this.adjustLayout();
     window.onresize = () => {
       this.adjustLayout();
@@ -114,6 +113,6 @@ console.log(xAxis);
   drawSvgImage(src,x,y,w,h){
     let image =  new Image();
     image.src = "data:image/svg+xml;charset=utf-8," + src;
-    image.onload = () => this.context.drawImage(image,x,y,w,h);
+    image.onload = () => this.ctx.drawImage(image,x,y,w,h);
   }
 }

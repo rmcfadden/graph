@@ -6,8 +6,8 @@ export default class Layer {
     this.graph = view.graph;
     this.canvas = this.view.canvas;
     this.ctx = this.view.ctx;
-    this.calcs = {};        
-    this.xToScreen = (x) => this.calcs.xScale * (x + this.calcs.xOffset);
+    this.calcs = {};
+    this.xToScreen = x => this.calcs.xScale * (x + this.calcs.xOffset);
     this.yToScreen = (y) => this.calcs.yScale * (this.calcs.yOffset - y);
     this.screenToX = (x) => (x / this.calcs.xScale) - this.calcs.xOffset;
     this.screenToY = (y) => this.calcs.yOffset - (y / this.calcs.yScale);
@@ -18,9 +18,9 @@ export default class Layer {
     }
 
     this.isInScreenBounds = (p) => {
-      const {xAxis, yAxis} = this.calcs;
-      return Utils.isBetween(p.x, this.xToScreen(xAxis.start), this.xToScreen(xAxis.end)) 
-        && Utils.isBetween(p.y,  this.yToScreen(yAxis.end), this.yToScreen(yAxis.start));
+      const {xStart, xEnd, yStart, yEnd} = this.calcs;
+      return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd)) 
+        && Utils.isBetween(p.y,  this.yToScreen(yEnd), this.yToScreen(yStart));
     };
   }
 
@@ -51,24 +51,26 @@ export default class Layer {
     
     const xStart = xAxis.getAdjustedStart();
     const xEnd = xAxis.getAdjustedEnd();    
+    const yStart = yAxis.getAdjustedStart();
+    const yEnd = yAxis.getAdjustedEnd();
     
     const xDistance = Utils.distance(xStart, xEnd);
     
     const xMid = xDistance / 2;
-    const yDistance = Utils.distance(yAxis.start, yAxis.end);
+    const yDistance = Utils.distance(yStart, yEnd);
     const yMid = yDistance / 2;
     const xScale = width / xDistance;
     const yScale = height / yDistance;
     const xOffset = xDistance - xEnd;
-    const yOffset = yDistance + yAxis.start;
+    const yOffset = yDistance + yStart;
 
     const xRange = Utils.range(xStart, xEnd, xAxis.majorGrid.step);
-    const yRange = Utils.range(yAxis.start, yAxis.end, yAxis.majorGrid.step);          
+    const yRange = Utils.range(yStart, yEnd, yAxis.majorGrid.step);          
     const xRangeAdjusted = Utils.offsetRangeToClosest(xRange, 0);
     const yRangeAdjusted = Utils.offsetRangeToClosest(yRange, 0);
 
-    const xRangeMinor = Utils.range(xAxis.start, xAxis.end, xAxis.minorGrid.step);
-    const yRangeMinor = Utils.range(yAxis.start, yAxis.end, yAxis.minorGrid.step);
+    const xRangeMinor = Utils.range(xStart, xEnd, xAxis.minorGrid.step);
+    const yRangeMinor = Utils.range(yStart, yEnd, yAxis.minorGrid.step);
     const xRangeMinorAdjusted = Utils.offsetRangeToClosest(xRangeMinor, 0);
     const yRangeMinorAdjusted = Utils.offsetRangeToClosest(yRangeMinor, 0);
 
@@ -87,6 +89,10 @@ export default class Layer {
       yScale: yScale,
       xRange: xRange,
       yRange: yRange,
+      xStart: xStart,
+      xEnd: xEnd,
+      yStart: yStart,
+      yEnd: yEnd,
       xRangeAdjusted: xRangeAdjusted,
       yRangeAdjusted: yRangeAdjusted,
       xRangeMinor: xRangeMinor,
@@ -99,16 +105,16 @@ export default class Layer {
   drawAxes() {
     const { config } = this.graph;
     const { ctx } = this;
-    const { xAxis, yAxis } = this.calcs;
+    const { xAxis, yAxis, xStart, xEnd, yStart, yEnd } = this.calcs;
  
     ctx.lineWidth = xAxis.width;
 
     // Draw gridlines/rulers
-    this.drawGrid({xAxis: xAxis, yAxis: yAxis, isMajor: false});  
-    this.drawGrid({xAxis: xAxis, yAxis: yAxis, axisDirection: "y", isMajor: false}); 
+    this.drawGrid({ isMajor: false});  
+    this.drawGrid({ axisDirection: "y", isMajor: false}); 
 
-    this.drawGrid({xAxis: xAxis, yAxis: yAxis});  
-    this.drawGrid({xAxis: xAxis, yAxis: yAxis, axisDirection: "y"}); 
+    this.drawGrid();  
+    this.drawGrid({axisDirection: "y"}); 
 
     // Draw origin
     ctx.beginPath();
@@ -116,18 +122,25 @@ export default class Layer {
     ctx.lineWidth = 1;
     const adjust = this.adjust;
 
-    ctx.moveTo(adjust(this.xToScreen(xAxis.start)),adjust(this.yToScreen(0)));        
-    ctx.lineTo(adjust(this.xToScreen(xAxis.end)),adjust(this.yToScreen(0)));        
+    ctx.moveTo(adjust(this.xToScreen(xStart)),adjust(this.yToScreen(0)));
+    ctx.lineTo(adjust(this.xToScreen(xEnd)),adjust(this.yToScreen(0)));
     
-    ctx.moveTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.start)));        
-    ctx.lineTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yAxis.end)));        
+    ctx.moveTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yStart)));
+    ctx.lineTo(adjust(this.xToScreen(0)),adjust(this.yToScreen(yEnd)));
     ctx.stroke();
   }
 
-  drawGrid({xAxis, yAxis, axisDirection = "x", isMajor = true} = {}) {
+  drawGrid({axisDirection = "x", isMajor = true} = {}) {
     const { config } = this.graph;
     const { ctx } = this;
-    const { xRangeAdjusted, yRangeAdjusted, xRangeMinorAdjusted, yRangeMinorAdjusted} = this.calcs; 
+    const { 
+      xRangeAdjusted,
+      yRangeAdjusted,
+      xRangeMinorAdjusted,
+      yRangeMinorAdjusted,
+      xAxis,
+      yAxis,
+    } = this.calcs; 
 
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ?  xAxis : yAxis;
@@ -136,24 +149,23 @@ export default class Layer {
     const textHeight = grid.textHeight;
 
     if(grid.show) {
-//      const originOffset = ((isXAxis ? xMid : yMid) % 1);
       const range = isXAxis ? 
         (isMajor ? xRangeAdjusted : xRangeMinorAdjusted) : 
         (isMajor ? yRangeAdjusted : yRangeMinorAdjusted);
-      //const distance = Utils.distance(axis.start, axis.end);  
+
+      const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
+      const rulerLength = textHeight  / ((isMajor) ? 2.0 : 4.0);
+  
       ctx.beginPath();
       ctx.strokeStyle = grid.style || config.borderStyle;
       ctx.lineWidth  = 1;
-      const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
-
-      const rulerLength = textHeight  / ((isMajor) ? 2.0 : 4.0);
 
       range.forEach(p => {
         const fixed = isXAxis ? this.xToScreen(p) : this.yToScreen(p);
         const gridType = "grid";
-        const start = (grid.type === gridType) ? toScreen(secondAxis.start)
+        const start = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedStart())
           : -1 * rulerLength;
-        const end = (grid.type === gridType) ? toScreen(secondAxis.end)
+        const end = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedEnd())
           : rulerLength;
         
         const xStart = isXAxis ? fixed : start;
@@ -175,7 +187,6 @@ export default class Layer {
       let mod = 1;
       
       range.forEach((p,i) => {
-//console.log(`p: ${p}, i % modulus = ${(i % modolus)}`);
         const dashWidth = ctx.measureText('-').width / 2.0;
         if((i % mod) !== 0) { return; }
         if(grid.showLabels){
@@ -198,9 +209,10 @@ export default class Layer {
             const currentY = this.yToScreen(0) - yTextOffset
 
             if(this.isInScreenBounds({ x: currentX, y: currentY }) && 
-              this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
-                ctx.strokeText(p, currentX, currentY);
-                ctx.fillText(p, currentX, currentY);
+              this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {                
+                const pFormatted = grid.labelFormatter ? grid.labelFormatter(p) : p;                
+                ctx.strokeText(pFormatted, currentX, currentY);
+                ctx.fillText(pFormatted, currentX, currentY);
             }
             previousX = currentX;
           }

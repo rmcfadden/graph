@@ -7,11 +7,10 @@ export default class Axis {
     this.show = true;
     this.width = 1;
     this.style = "black";
-    this.majorGrid = new GridLines({ step : .5, style: "darkgrey", showLabels: true });
-    this.minorGrid = new GridLines({ step :.1, style: "lightgrey" });
+    this.majorGrid = new GridLines({ step: 0.5, style: "darkgrey", showLabels: true });
+    this.minorGrid = new GridLines({ step: 0.1, style: "lightgrey" });
     this.offset = 0;
-  
     this.getAdjustedStart = () => this.start + this.offset;
-    this.getAdjustedEnd = () => this.end + this.offset;    
+    this.getAdjustedEnd = () => this.end + this.offset;
   }
 }
