@@ -14,7 +14,9 @@ export default class GridLines {
     this.labelStyle = "black";
     this.labelsInNegative = true;
     this.textHeight = 16;
-    this.labelFormatter = label =>
-      typeof label === "number" ? (label % 1 === 0) ? label : parseFloat(label).toFixed(1).toLocaleString() : label;
+    this.labelFormatter = (label) => {
+      if (typeof label !== "number") { return label; }
+      return (label % 1 === 0) ? label : parseFloat(label).toFixed(1).toLocaleString();
+    };
   }
 }
