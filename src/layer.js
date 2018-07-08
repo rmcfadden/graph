@@ -74,6 +74,12 @@ export default class Layer {
     const yRange = Utils.range(yStart, yEnd, yAxis.majorGrid.step);
     const xRangeAdjusted = Utils.offsetRangeToClosest(xRange, 0);
     const yRangeAdjusted = Utils.offsetRangeToClosest(yRange, 0);
+    
+console.log(xRange);
+console.log(`closestTo: ${Utils.closestTo(xRange, 0)}`);
+console.log(`xStart: ${xStart}`);
+console.log(`xEnd: ${xEnd}`);
+console.log(xRangeAdjusted);
 
     const xRangeMinor = Utils.range(xStart, xEnd, xAxis.minorGrid.step);
     const yRangeMinor = Utils.range(yStart, yEnd, yAxis.minorGrid.step);
@@ -125,8 +131,8 @@ export default class Layer {
     this.drawGrid({ isMajor: false });
     this.drawGrid({ axisDirection: "y", isMajor: false });
 
-    this.drawGrid();  
-    this.drawGrid({axisDirection: "y" });
+    this.drawGrid();
+    this.drawGrid({ axisDirection: "y" });
 
     // Draw origin
     ctx.beginPath();
@@ -162,13 +168,14 @@ export default class Layer {
     const { textHeight } = grid;
 
     if (grid.show) {
-      const range = isXAxis ? 
-        (isMajor ? xRangeAdjusted : xRangeMinorAdjusted) : 
-        (isMajor ? yRangeAdjusted : yRangeMinorAdjusted);
+      let range = isMajor ? xRangeAdjusted : xRangeMinorAdjusted;
+      if (!isXAxis) {
+        range = isMajor ? yRangeAdjusted : yRangeMinorAdjusted;
+      }
 
       const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
-  
+
       ctx.beginPath();
       ctx.strokeStyle = grid.style || config.borderStyle;
       ctx.lineWidth = 1;
@@ -194,10 +201,10 @@ export default class Layer {
       // Draw horizontal labels
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
-      
-      let previousX = null;
+
+      // let previousX = null;
       const mod = 1;
-      
+
       range.forEach((p, i) => {
         const dashWidth = ctx.measureText("-").width / 2.0;
         if ((i % mod) !== 0) { return; }
@@ -220,17 +227,16 @@ export default class Layer {
             const currentX = this.xToScreen(p) - xTextOffset;
             const currentY = this.yToScreen(0) - yTextOffset;
 
-            if (this.isInScreenBounds({ x: currentX, y: currentY }) &&
-              this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
+            if (this.isInScreenBounds({ x: currentX, y: currentY })
+              && this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
               const pFormatted = grid.labelFormatter ? grid.labelFormatter(p) : p;
               ctx.strokeText(pFormatted, currentX, currentY);
               ctx.fillText(pFormatted, currentX, currentY);
             }
-            previousX = currentX;
+            // previousX = currentX;
           }
         }
       });
     }
   }
-
 }

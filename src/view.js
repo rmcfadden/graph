@@ -41,7 +41,6 @@ export default class View {
       const { x, y } = this.startCoords;
       const diffX = (x - e.offsetX) * -1;
       const diffY = y - e.offsetY;
-
       const {
         xDistance,
         yDistance,
@@ -59,7 +58,7 @@ export default class View {
       console.log(`xDistance: ${xDistance}, yDistance: ${yDistance}`);
       */
 
-      console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}`);
+      // console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}`);
 
       const xAxis = this.graph.config.axes.x;
       xAxis.offset = offsetX;
@@ -90,10 +89,12 @@ export default class View {
 
     const width = Math.round(1.0 * window.innerWidth);
     const height = Math.round(1.0 * window.innerHeight);
-
-    graphElement.style.position = "relative";
-    graphElement.style.width = `${width}px`;
-    graphElement.style.height = `${height}px`;
+    graphElement.style = {
+      position: "relative",
+      width: `${width}px`,
+      height: `${height}px`,
+      ...graphElement.style,
+    };
 
     this.canvas.width = width * pixelRatio;
     this.canvas.height = height * pixelRatio;

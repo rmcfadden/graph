@@ -14,7 +14,7 @@ export default class Utils {
 
   static offsetRangeToClosest(items, n) {
     const closest = Utils.closestTo(items, n);
-    return items.map(x => (closest > 0 ? x + closest : x - closest));
+    return items.map(x => (closest > 0 ? x - closest : x + (-1 * closest)));
   }
 
   static isBetween(x, start, end) {
