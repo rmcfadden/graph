@@ -7,9 +7,9 @@ export default class Utils {
   }
 
   static closestTo(items, n) {
-    const closest = items.reduce((prev, next, i) => 
-      prev === undefined || (Math.abs(items[i]  - n) < Math.abs(items[prev] - n) ) ? i : prev, undefined);
-    return (closest > 0 ) ? items[closest] : undefined;
+    const closest = items.reduce((prev, _, i) => (prev === undefined
+        || (Math.abs(items[i] - n) < Math.abs(items[prev] - n)) ? i : prev), undefined);
+    return (closest > 0) ? items[closest] : undefined;
   }
 
   static offsetRangeToClosest(items, n) {
