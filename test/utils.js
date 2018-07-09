@@ -15,19 +15,24 @@ describe("Utils", () => {
       should(Utils.distance(5, -5)).be.equal(10);
     });
 
-    it("with start and end euqal ", () => {
+    it("with start and end equal ", () => {
       should(Utils.distance(5, 5)).be.equal(0);
     });
   });
 
-  describe("range", () => {
-    it("0 to 0", () => {
-      should(Utils.range(0, 0)).be.eql([0]);
+  describe("alignRange", () => {
+    it("with n = 0", () => {
+      should(() => Utils.alignRange([], 0)).throw();
     });
 
-    it("-5.5 to 5.5", () => {
-      should(Utils.range(-5.5, 5.5))
-        .be.eql([-5.5, -4.5, -3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]);
+    it("with aligned range", () => {
+      should(Utils.alignRange([1, 2, 3, 4], 1))
+        .be.eql([1, 2, 3, 4]);
+    });
+
+    it("with non aligned range", () => {
+      should(Utils.alignRange([1.1, 2.2, 3.3, 4.4], 0.25))
+        .be.eql([1, 2.25, 3.25, 4.5]);
     });
   });
 });

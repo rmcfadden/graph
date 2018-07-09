@@ -35,6 +35,8 @@ export default class View {
       this.lastCoords = { x: lastX, y: lastY };
     };
 
+    this.canvas.onmouseleave = this.canvas.onmouseup;
+
     graphElement.onmousemove = (e) => {
       if (!this.isMouseDown) { return; }
 
@@ -52,14 +54,6 @@ export default class View {
       const changeY = diffY / height;
       const offsetX = xDistance * changeX;
       const offsetY = yDistance * changeY;
-      /*
-      console.log(`diffX: ${diffX}, diffY: ${diffY}`);
-      console.log(`changeX: ${changeX}, changeY: ${changeY}`);
-      console.log(`xDistance: ${xDistance}, yDistance: ${yDistance}`);
-      */
-
-      // console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}`);
-
       const xAxis = this.graph.config.axes.x;
       xAxis.offset = offsetX;
 

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import Utils from "./utils";
 
 export default class Layer {
@@ -70,21 +71,15 @@ export default class Layer {
     const xOffset = xDistance - xEnd;
     const yOffset = yDistance + yStart;
 
-    const xRange = Utils.range(xStart, xEnd, xAxis.majorGrid.step);
-    const yRange = Utils.range(yStart, yEnd, yAxis.majorGrid.step);
-    const xRangeAdjusted = Utils.offsetRangeToClosest(xRange, 0);
-    const yRangeAdjusted = Utils.offsetRangeToClosest(yRange, 0);
-    
-console.log(xRange);
-console.log(`closestTo: ${Utils.closestTo(xRange, 0)}`);
-console.log(`xStart: ${xStart}`);
-console.log(`xEnd: ${xEnd}`);
-console.log(xRangeAdjusted);
+    const xRange = _.range(xStart, xEnd, xAxis.majorGrid.step);
+    const yRange = _.range(yStart, yEnd, yAxis.majorGrid.step);
+    const xRangeAdjusted = Utils.alignRange(xRange, xAxis.majorGrid.step);
+    const yRangeAdjusted = Utils.alignRange(yRange, yAxis.majorGrid.step);
 
-    const xRangeMinor = Utils.range(xStart, xEnd, xAxis.minorGrid.step);
-    const yRangeMinor = Utils.range(yStart, yEnd, yAxis.minorGrid.step);
-    const xRangeMinorAdjusted = Utils.offsetRangeToClosest(xRangeMinor, 0);
-    const yRangeMinorAdjusted = Utils.offsetRangeToClosest(yRangeMinor, 0);
+    const xRangeMinor = _.range(xStart, xEnd, xAxis.minorGrid.step);
+    const yRangeMinor = _.range(yStart, yEnd, yAxis.minorGrid.step);
+    const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xAxis.minorGrid.step);
+    const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yAxis.minorGrid.step);
 
     this.calcs = {
       width,

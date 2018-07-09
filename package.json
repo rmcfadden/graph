@@ -6,13 +6,14 @@
   "dependencies": {
     "babel-loader": "^7.1.5",
     "babel-preset-es2015": "^6.24.1",
+    "lodash": "^4.17.10",
     "webpack": "^4.15.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^6.24.1",
-    "eslint": "^5.0.1",
+    "eslint": "^5.1.0",
     "eslint-config-airbnb": "^17.0.0",
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-jsx-a11y": "^6.1.0",
