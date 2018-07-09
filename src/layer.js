@@ -167,7 +167,6 @@ export default class Layer {
       if (!isXAxis) {
         range = isMajor ? yRangeAdjusted : yRangeMinorAdjusted;
       }
-
       const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
 

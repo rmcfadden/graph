@@ -10,11 +10,22 @@ export default class View {
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
 
+    this.drawSvgImage = (ctx, src, x, y, w, h) => {
+      const image = new Image();
+      image.src = `data:image/svg+xml;charset=utf-8,${src}`;
+      image.onload = () => ctx.drawImage(image, x, y, w, h);
+    };
+
     const graphElement = document.getElementById(this.graph.id);
-    graphElement.innerHTML = `<canvas id='${this.graph.canvasId}'></canvas>`;
+    graphElement.style.position = "relative";
+    graphElement.innerHTML = `<canvas id='${this.graph.canvasId}' style='position: absolute; left: 0; top: 0; z-index: 0;'></canvas>`
+      + `<canvas id='${this.graph.canvasId}-top' style='position: absolute; left: 0; top: 0; z-index: 1;'></canvas>`;
 
     this.canvas = document.getElementById(this.graph.canvasId);
     this.ctx = this.canvas.getContext("2d");
+
+    this.canvasTop = document.getElementById(`${this.graph.canvasId}-top`);
+    this.ctxTop = this.canvasTop.getContext("2d");
 
     this.layers = { default: new Layer(this) };
     this.graph.canvasId = `canvas-${graph.id}`;
@@ -27,15 +38,13 @@ export default class View {
       this.startCoords = { x: startX, y: startY };
     };
 
-    this.canvas.onmouseup = (e) => {
+    graphElement.onmouseup = (e) => {
       this.isMouseDown = false;
       const { x, y } = this.startCoords;
       const lastX = e.offsetX - x;
       const lastY = e.offsetY - y;
       this.lastCoords = { x: lastX, y: lastY };
     };
-
-    this.canvas.onmouseleave = this.canvas.onmouseup;
 
     graphElement.onmousemove = (e) => {
       if (!this.isMouseDown) { return; }
@@ -63,53 +72,44 @@ export default class View {
       this.draw();
     };
 
+    graphElement.onmouseleave = graphElement.onmouseup;
+    graphElement.ontouchmove = graphElement.onmousemove;
+    graphElement.ontouchstart = graphElement.onmousemove;
+    graphElement.ontouchend = graphElement.onmouseup;
+
     this.getSelectedLayer = () => this.layers.default; // default for now
 
-    this.adjustLayout();
     window.onresize = () => {
       this.adjustLayout();
       this.draw();
+      this.drawTop();
     };
+    window.onorientationchange = window.onresize;
+
+    this.adjustLayout();
+    this.draw();
+    this.drawTop();
   }
 
   adjustLayout() {
-    // TODO: Currently only support full width
-    const graphElement = document.getElementById(this.graph.id);
-    const pixelRatio = window.devicePixelRatio || 1;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.canvasTop.width = window.innerWidth;
+    this.canvasTop.height = window.innerHeight;
+  }
 
-    // const realWidth = window.innerHeight > window.innerWidth ?
-    // Math.round(1.0 * window.innerWidth) :
-    // Math.round(1.0 * window.innerHeight);
-
-    const width = Math.round(1.0 * window.innerWidth);
-    const height = Math.round(1.0 * window.innerHeight);
-    graphElement.style = {
-      position: "relative",
-      width: `${width}px`,
-      height: `${height}px`,
-      ...graphElement.style,
-    };
-
-    this.canvas.width = width * pixelRatio;
-    this.canvas.height = height * pixelRatio;
+  drawTop() {
+    this.ctxTop.clearRect(0, 0, this.canvasTop.width, this.canvasTop.height);
+    const l = 35;
+    const m = 5;
+    const left = this.canvasTop.width - (m + l);
+    this.drawSvgImage(this.ctxTop, ZoomInSvg, left, m, l, l);
+    this.drawSvgImage(this.ctxTop, ZoomOutSvg, left, l + m, l, l);
+    this.drawSvgImage(this.ctxTop, SettingsSvg, left, (l * 2) + m, l, l);
   }
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
     Object.keys(this.layers).forEach(x => this.layers[x].draw());
-
-    const l = 35;
-    const m = 5;
-    const left = this.canvas.width - (m + l);
-    this.drawSvgImage(ZoomInSvg, left, m, l, l);
-    this.drawSvgImage(ZoomOutSvg, left, l + m, l, l);
-    this.drawSvgImage(SettingsSvg, left, (l * 2) + m, l, l);
-  }
-
-  drawSvgImage(src, x, y, w, h) {
-    const image = new Image();
-    image.src = `data:image/svg+xml;charset=utf-8,${src}`;
-    image.onload = () => this.ctx.drawImage(image, x, y, w, h);
   }
 }
