@@ -12,14 +12,16 @@ export default class View {
 
     this.drawSvgImage = (ctx, src, x, y, w, h) => {
       const image = new Image();
-      image.src = `data:image/svg+xml;charset=utf-8,${src}`;
       image.onload = () => ctx.drawImage(image, x, y, w, h);
+      image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
     };
+
+    this.graph.canvasId = `canvas-${graph.id}`;
 
     const graphElement = document.getElementById(this.graph.id);
     graphElement.style.position = "relative";
-    graphElement.innerHTML = `<canvas id='${this.graph.canvasId}' style='position: absolute; left: 0; top: 0; z-index: 0;'></canvas>`
-      + `<canvas id='${this.graph.canvasId}-top' style='position: absolute; left: 0; top: 0; z-index: 1;'></canvas>`;
+    graphElement.innerHTML = `<canvas id='${this.graph.canvasId}-top' style='position: absolute; left: 0; top: 0; z-index: 2;'></canvas>`
+      + `<canvas id='${this.graph.canvasId}' style='position: absolute; left: 0; top: 0; z-index: 1;'></canvas>`;
 
     this.canvas = document.getElementById(this.graph.canvasId);
     this.ctx = this.canvas.getContext("2d");
@@ -28,7 +30,6 @@ export default class View {
     this.ctxTop = this.canvasTop.getContext("2d");
 
     this.layers = { default: new Layer(this) };
-    this.graph.canvasId = `canvas-${graph.id}`;
 
     graphElement.onmousedown = (e) => {
       this.isMouseDown = true;
@@ -72,10 +73,14 @@ export default class View {
       this.draw();
     };
 
-    graphElement.onmouseleave = graphElement.onmouseup;
-    graphElement.ontouchmove = graphElement.onmousemove;
-    graphElement.ontouchstart = graphElement.onmousemove;
-    graphElement.ontouchend = graphElement.onmouseup;
+    graphElement.ontouchstart = () => {
+    };
+
+    graphElement.ontouchmove = () => {
+    };
+
+    graphElement.ontouchend = () => {
+    };
 
     this.getSelectedLayer = () => this.layers.default; // default for now
 
@@ -103,6 +108,7 @@ export default class View {
     const l = 35;
     const m = 5;
     const left = this.canvasTop.width - (m + l);
+
     this.drawSvgImage(this.ctxTop, ZoomInSvg, left, m, l, l);
     this.drawSvgImage(this.ctxTop, ZoomOutSvg, left, l + m, l, l);
     this.drawSvgImage(this.ctxTop, SettingsSvg, left, (l * 2) + m, l, l);
