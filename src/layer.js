@@ -8,10 +8,10 @@ export default class Layer {
     this.canvas = this.view.canvas;
     this.ctx = this.view.ctx;
     this.calcs = {};
-    this.xToScreen = x => this.calcs.xScale * (x + this.calcs.xOffset);
-    this.yToScreen = y => this.calcs.yScale * (this.calcs.yOffset - y);
-    this.screenToX = x => (x / this.calcs.xScale) - this.calcs.xOffset;
-    this.screenToY = y => this.calcs.yOffset - (y / this.calcs.yScale);
+    this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
+    this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
+    this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
+    this.screenToY = y => this.calcs.yOffset - (y / this.calcs.yScreenScale);
     this.adjust = x => parseInt(x, 0);
 
     this.isInBounds = (p) => {
@@ -56,30 +56,37 @@ export default class Layer {
     const { config } = this.graph;
     const { width, height } = this.canvas;
     const { x: xAxis, y: yAxis } = config.axes;
-
-    const xStart = xAxis.getAdjustedStart();
-    const xEnd = xAxis.getAdjustedEnd();
-    const yStart = yAxis.getAdjustedStart();
-    const yEnd = yAxis.getAdjustedEnd();
+    const { xScale, yScale } = config.transform;
+    
+    const xStart = xAxis.getAdjustedStart() * xScale;
+    const xEnd = xAxis.getAdjustedEnd() * xScale;
+    const yStart = yAxis.getAdjustedStart() * yScale;
+    const yEnd = yAxis.getAdjustedEnd() * yScale;
 
     const xDistance = Utils.distance(xStart, xEnd);
     const xMid = xDistance / 2;
     const yDistance = Utils.distance(yStart, yEnd);
     const yMid = yDistance / 2;
-    const xScale = width / xDistance;
-    const yScale = height / yDistance;
+    const xScreenScale = width / xDistance;
+    const yScreenScale = height / yDistance;
     const xOffset = xDistance - xEnd;
     const yOffset = yDistance + yStart;
 
-    const xRange = _.range(xStart, xEnd, xAxis.majorGrid.step);
-    const yRange = _.range(yStart, yEnd, yAxis.majorGrid.step);
+    const xMajorStep = xAxis.majorGrid.step * xScale;
+    const yMajorStep = yAxis.majorGrid.step * yScale;
+    const xMinorStep = xAxis.minorGrid.step * xScale;
+    const yMinorStep = yAxis.minorGrid.step * yScale;
+
+    
+    const xRange = _.range(xStart, xEnd, xMajorStep);
+    const yRange = _.range(yStart, yEnd, yMajorStep);
     const xRangeAdjusted = Utils.alignRange(xRange, xAxis.majorGrid.step);
     const yRangeAdjusted = Utils.alignRange(yRange, yAxis.majorGrid.step);
 
-    const xRangeMinor = _.range(xStart, xEnd, xAxis.minorGrid.step);
-    const yRangeMinor = _.range(yStart, yEnd, yAxis.minorGrid.step);
-    const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xAxis.minorGrid.step);
-    const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yAxis.minorGrid.step);
+    const xRangeMinor = _.range(xStart, xEnd, xMinorStep);
+    const yRangeMinor = _.range(yStart, yEnd, yMinorStep);
+    const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xMinorStep);
+    const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yMinorStep);
 
     this.calcs = {
       width,
@@ -92,8 +99,8 @@ export default class Layer {
       yMid,
       xOffset,
       yOffset,
-      xScale,
-      yScale,
+      xScreenScale,
+      yScreenScale,
       xRange,
       yRange,
       xStart,
@@ -154,6 +161,8 @@ export default class Layer {
       yRangeMinorAdjusted,
       xAxis,
       yAxis,
+      xScale,
+      yScale,
     } = this.calcs;
 
     const isXAxis = (axisDirection === "x");
@@ -176,8 +185,8 @@ export default class Layer {
 
       range.forEach((p) => {
         const fixed = isXAxis ? this.xToScreen(p) : this.yToScreen(p);
-        const gridType = "grid";
-        const start = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedStart())
+        const gridType = "grid1";
+        const start = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedStart()) // TODO: fix scaling here
           : -1 * rulerLength;
         const end = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedEnd())
           : rulerLength;
@@ -197,6 +206,7 @@ export default class Layer {
       ctx.fillStyle = grid.labelStyle;
 
       // let previousX = null;
+      // TODO: remove labels if they overlap
       const mod = 1;
 
       range.forEach((p, i) => {

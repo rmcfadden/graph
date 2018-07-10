@@ -9,11 +9,20 @@ export default class View {
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
+    this.elements = [];
 
-    this.drawSvgImage = (ctx, src, x, y, w, h) => {
+    this.drawSvgImage = (ctx, src, x, y, w, h, name) => {
       const image = new Image();
       image.onload = () => ctx.drawImage(image, x, y, w, h);
       image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
+      this.elements.push({
+        left: x,
+        top: y,
+        width: w,
+        height: h,
+        element: image,
+        name: name,
+      });
     };
 
     this.graph.canvasId = `canvas-${graph.id}`;
@@ -31,6 +40,7 @@ export default class View {
 
     this.layers = { default: new Layer(this) };
 
+
     graphElement.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
@@ -46,6 +56,8 @@ export default class View {
       const lastY = e.offsetY - y;
       this.lastCoords = { x: lastX, y: lastY };
     };
+
+    graphElement.onmouseleave = graphElement.onmouseup;
 
     graphElement.onmousemove = (e) => {
       if (!this.isMouseDown) { return; }
@@ -70,6 +82,10 @@ export default class View {
       const yAxis = this.graph.config.axes.y;
       yAxis.offset = offsetY;
 
+      const lastX = e.offsetX - x;
+      const lastY = e.offsetY - y;
+      this.lastCoords = { x: lastX, y: lastY };
+
       this.draw();
     };
 
@@ -80,6 +96,22 @@ export default class View {
     };
 
     graphElement.ontouchend = () => {
+    };
+
+    this.canvasTop.onclick = (e) => {
+      const x = e.pageX - this.canvasTop.offsetLeft;
+      const y = e.pageY - this.canvasTop.offsetTop;
+      this.elements.forEach((element) => {
+        if (x >= element.left && y >= element.top
+          && x <= element.left + element.width && y <= element.top + element.height) {
+          switch (element.name) {
+          case "zoomin": { this.ZoomIn(); break; }
+          case "zoomout": { this.ZoomOut(); break; }
+          case "settings": { break; }
+          default: { alert("Action now found"); }
+          }
+        }
+      });
     };
 
     this.getSelectedLayer = () => this.layers.default; // default for now
@@ -109,10 +141,25 @@ export default class View {
     const m = 5;
     const left = this.canvasTop.width - (m + l);
 
-    this.drawSvgImage(this.ctxTop, ZoomInSvg, left, m, l, l);
-    this.drawSvgImage(this.ctxTop, ZoomOutSvg, left, l + m, l, l);
-    this.drawSvgImage(this.ctxTop, SettingsSvg, left, (l * 2) + m, l, l);
+    this.drawSvgImage(this.ctxTop, ZoomInSvg, left, m, l, l, "zoomin");
+    this.drawSvgImage(this.ctxTop, ZoomOutSvg, left, l + m, l, l, "zoomout");
+    this.drawSvgImage(this.ctxTop, SettingsSvg, left, (l * 2) + m, l, l, "settings");
   }
+
+  ZoomIn() {
+    const { transform } = this.graph.config;
+    transform.xScale *= 0.5;
+    transform.yScale *= 0.5;
+    this.draw();
+  }
+
+  ZoomOut() {
+    const { transform } = this.graph.config;
+    transform.xScale *= 2.0;
+    transform.yScale *= 2.0;
+    this.draw();
+  }
+
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

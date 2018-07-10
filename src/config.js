@@ -10,5 +10,9 @@ export default class Config {
       x: new Axis(),
       y: new Axis(),
     };
+    this.transform = {
+      xScale: 1.0,
+      yScale: 1.0,
+    };
   }
 }
