@@ -85,8 +85,8 @@ export default class Layer {
 
     const xRange = _.range(xStart, xEnd, xMajorStep);
     const yRange = _.range(yStart, yEnd, yMajorStep);
-    const xRangeAdjusted = Utils.alignRange(xRange, xAxis.majorGrid.step);
-    const yRangeAdjusted = Utils.alignRange(yRange, yAxis.majorGrid.step);
+    const xRangeAdjusted = Utils.alignRange(xRange, xMajorStep);
+    const yRangeAdjusted = Utils.alignRange(yRange, yMajorStep);
 
     const xRangeMinor = _.range(xStart, xEnd, xMinorStep);
     const yRangeMinor = _.range(yStart, yEnd, yMinorStep);
@@ -119,7 +119,6 @@ export default class Layer {
       xRangeMinorAdjusted,
       yRangeMinorAdjusted,
     };
-    console.log(this.calcs);
   }
 
   drawAxes() {
@@ -136,8 +135,8 @@ export default class Layer {
     ctx.lineWidth = xAxis.width;
 
     // Draw gridlines/rulers
-    this.drawGrid({ isMajor: false });
-    this.drawGrid({ axisDirection: "y", isMajor: false });
+    //this.drawGrid({ isMajor: false });
+    //this.drawGrid({ axisDirection: "y", isMajor: false });
 
     this.drawGrid();
     this.drawGrid({ axisDirection: "y" });

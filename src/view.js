@@ -40,7 +40,6 @@ export default class View {
 
     this.layers = { default: new Layer(this) };
 
-
     graphElement.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
@@ -57,16 +56,14 @@ export default class View {
       this.lastCoords = { x: lastX, y: lastY };
     };
 
-    graphElement.onmouseleave = graphElement.onmouseup;
-
     graphElement.onmousemove = (e) => {
       if (!this.isMouseDown) { return; }
 
       const { x, y } = this.startCoords;
-      const diffX = (x - e.offsetX) * -1;
+      const diffX = e.offsetX - x;
       const diffY = y - e.offsetY;
       const { transform } = this.graph.config;
-
+      const { xScale, yScale } = transform;
       const {
         xDistance,
         yDistance,
@@ -76,17 +73,22 @@ export default class View {
 
       const changeX = diffX / width;
       const changeY = diffY / height;
-      const xOffset = xDistance * changeX;
-      const yOffset = yDistance * changeY;
+      const xOffset = xDistance * changeX / xScale;
+      const yOffset = yDistance * changeY / yScale;
 
       transform.xOffset = xOffset;
       transform.yOffset = yOffset;
 
-      const lastX = e.offsetX - x;
-      const lastY = e.offsetY - y;
-      this.lastCoords = { x: lastX, y: lastY };
-
       this.draw();
+    };
+
+    graphElement.onmousewheel = (e) => {
+      const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      if (delta > 0) {
+        this.ZoomIn();
+      } else {
+        this.ZoomOut();
+      }
     };
 
     graphElement.ontouchstart = () => {
