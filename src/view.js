@@ -21,7 +21,7 @@ export default class View {
         width: w,
         height: h,
         element: image,
-        name: name,
+        name,
       });
     };
 
@@ -65,6 +65,8 @@ export default class View {
       const { x, y } = this.startCoords;
       const diffX = (x - e.offsetX) * -1;
       const diffY = y - e.offsetY;
+      const { transform } = this.graph.config;
+
       const {
         xDistance,
         yDistance,
@@ -74,13 +76,11 @@ export default class View {
 
       const changeX = diffX / width;
       const changeY = diffY / height;
-      const offsetX = xDistance * changeX;
-      const offsetY = yDistance * changeY;
-      const xAxis = this.graph.config.axes.x;
-      xAxis.offset = offsetX;
+      const xOffset = xDistance * changeX;
+      const yOffset = yDistance * changeY;
 
-      const yAxis = this.graph.config.axes.y;
-      yAxis.offset = offsetY;
+      transform.xOffset = xOffset;
+      transform.yOffset = yOffset;
 
       const lastX = e.offsetX - x;
       const lastY = e.offsetY - y;
@@ -159,7 +159,6 @@ export default class View {
     transform.yScale *= 2.0;
     this.draw();
   }
-
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

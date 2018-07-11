@@ -15,4 +15,18 @@ export default class Utils {
   static isBetween(x, start, end) {
     return x >= start && x <= end;
   }
+
+  static applyTansform(p, transform) {
+    const {
+      xOffset,
+      yOffset,
+      xScale,
+      yScale,
+    } = transform;
+
+    return {
+      x: (p.x + xOffset) * xScale,
+      y: (p.y + yOffset) * yScale,
+    };
+  }
 }

@@ -56,12 +56,18 @@ export default class Layer {
     const { config } = this.graph;
     const { width, height } = this.canvas;
     const { x: xAxis, y: yAxis } = config.axes;
-    const { xScale, yScale } = config.transform;
-    
-    const xStart = xAxis.getAdjustedStart() * xScale;
-    const xEnd = xAxis.getAdjustedEnd() * xScale;
-    const yStart = yAxis.getAdjustedStart() * yScale;
-    const yEnd = yAxis.getAdjustedEnd() * yScale;
+    const { transform } = config;
+    const { xScale, yScale } = transform;
+
+    const {
+      x: xStart,
+      y: yStart,
+    } = Utils.applyTansform({ x: xAxis.start, y: yAxis.start }, transform);
+
+    const {
+      x: xEnd,
+      y: yEnd,
+    } = Utils.applyTansform({ x: xAxis.end, y: yAxis.end }, transform);
 
     const xDistance = Utils.distance(xStart, xEnd);
     const xMid = xDistance / 2;
@@ -77,7 +83,6 @@ export default class Layer {
     const xMinorStep = xAxis.minorGrid.step * xScale;
     const yMinorStep = yAxis.minorGrid.step * yScale;
 
-    
     const xRange = _.range(xStart, xEnd, xMajorStep);
     const yRange = _.range(yStart, yEnd, yMajorStep);
     const xRangeAdjusted = Utils.alignRange(xRange, xAxis.majorGrid.step);
@@ -85,8 +90,8 @@ export default class Layer {
 
     const xRangeMinor = _.range(xStart, xEnd, xMinorStep);
     const yRangeMinor = _.range(yStart, yEnd, yMinorStep);
-    const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xMinorStep);
-    const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yMinorStep);
+    const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xAxis.minorGrid.step);
+    const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yAxis.minorGrid.step);
 
     this.calcs = {
       width,
@@ -114,6 +119,7 @@ export default class Layer {
       xRangeMinorAdjusted,
       yRangeMinorAdjusted,
     };
+    console.log(this.calcs);
   }
 
   drawAxes() {
@@ -161,13 +167,14 @@ export default class Layer {
       yRangeMinorAdjusted,
       xAxis,
       yAxis,
-      xScale,
-      yScale,
+      xStart,
+      xEnd,
+      yStart,
+      yEnd,
     } = this.calcs;
 
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ? xAxis : yAxis;
-    const secondAxis = isXAxis ? yAxis : xAxis;
     const grid = isMajor ? axis.majorGrid : axis.minorGrid;
     const { textHeight } = grid;
 
@@ -183,21 +190,24 @@ export default class Layer {
       ctx.strokeStyle = grid.style || config.borderStyle;
       ctx.lineWidth = 1;
 
+      const axisStart = isXAxis ? yStart : xStart;
+      const axisEnd = isXAxis ? yEnd : xEnd;
+
       range.forEach((p) => {
         const fixed = isXAxis ? this.xToScreen(p) : this.yToScreen(p);
-        const gridType = "grid1";
-        const start = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedStart()) // TODO: fix scaling here
+        const gridType = "grid";
+        const start = (grid.type === gridType) ? toScreen(axisStart)
           : -1 * rulerLength;
-        const end = (grid.type === gridType) ? toScreen(secondAxis.getAdjustedEnd())
+        const end = (grid.type === gridType) ? toScreen(axisEnd)
           : rulerLength;
 
-        const xStart = isXAxis ? fixed : start;
-        const xEnd = isXAxis ? fixed : end;
-        const yStart = isXAxis ? start : fixed;
-        const yEnd = isXAxis ? end : fixed;
+        const xStartLine = isXAxis ? fixed : start;
+        const xEndLine = isXAxis ? fixed : end;
+        const yStartLine = isXAxis ? start : fixed;
+        const yEndLine = isXAxis ? end : fixed;
 
-        ctx.moveTo(this.adjust(xStart), this.adjust(yStart));
-        ctx.lineTo(this.adjust(xEnd), this.adjust(yEnd));
+        ctx.moveTo(this.adjust(xStartLine), this.adjust(yStartLine));
+        ctx.lineTo(this.adjust(xEndLine), this.adjust(yEndLine));
       });
       ctx.stroke();
 

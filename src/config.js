@@ -13,6 +13,8 @@ export default class Config {
     this.transform = {
       xScale: 1.0,
       yScale: 1.0,
+      xOffset: 0,
+      yOffset: 0,
     };
   }
 }
