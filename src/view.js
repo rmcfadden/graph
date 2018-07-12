@@ -149,16 +149,24 @@ export default class View {
   }
 
   ZoomIn() {
-    const { transform } = this.graph.config;
-    transform.xScale *= 0.5;
-    transform.yScale *= 0.5;
-    this.draw();
+    this.Zoom({ scale: 0.5 });
   }
 
   ZoomOut() {
+    this.Zoom({ scale: 2.0 });
+  }
+
+  Zoom(args) {
     const { transform } = this.graph.config;
-    transform.xScale *= 2.0;
-    transform.yScale *= 2.0;
+    const {
+      xDistance,
+      yDistance,
+      width,
+      height,
+    } = this.getSelectedLayer().calcs;
+
+    transform.xScale *= args.scale;
+    transform.yScale *= args.scale;
     this.draw();
   }
 

@@ -70,9 +70,7 @@ export default class Layer {
     } = Utils.applyTansform({ x: xAxis.end, y: yAxis.end }, transform);
 
     const xDistance = Utils.distance(xStart, xEnd);
-    const xMid = xDistance / 2;
     const yDistance = Utils.distance(yStart, yEnd);
-    const yMid = yDistance / 2;
     const xScreenScale = width / xDistance;
     const yScreenScale = height / yDistance;
     const xOffset = xDistance - xEnd;
@@ -100,8 +98,6 @@ export default class Layer {
       yAxis,
       xDistance,
       yDistance,
-      xMid,
-      yMid,
       xOffset,
       yOffset,
       xScreenScale,
@@ -134,7 +130,7 @@ export default class Layer {
 
     ctx.lineWidth = xAxis.width;
 
-    // Draw gridlines/rulers
+    // Draw minor gridlines
     //this.drawGrid({ isMajor: false });
     //this.drawGrid({ axisDirection: "y", isMajor: false });
 
@@ -223,7 +219,8 @@ export default class Layer {
         if ((i % mod) !== 0) { return; }
         if (grid.showLabels) {
           if (isXAxis) {
-            const textMetrics = ctx.measureText(p);
+            const pFormatted = grid.labelFormatter ? grid.labelFormatter(p) : p;
+            const textMetrics = ctx.measureText(pFormatted);
             let xTextOffset = (textMetrics.width / 2.0);
             if (p < 0) {
               xTextOffset += dashWidth;
@@ -242,7 +239,6 @@ export default class Layer {
 
             if (this.isInScreenBounds({ x: currentX, y: currentY })
               && this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
-              const pFormatted = grid.labelFormatter ? grid.labelFormatter(p) : p;
               ctx.strokeText(pFormatted, currentX, currentY);
               ctx.fillText(pFormatted, currentX, currentY);
             }
