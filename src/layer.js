@@ -76,6 +76,9 @@ export default class Layer {
     const xOffset = xDistance - xEnd;
     const yOffset = yDistance + yStart;
 
+    const xMid = xStart + (xDistance / 2.0);
+    const yMid = yStart + (yDistance / 2.0);
+
     const xMajorStep = xAxis.majorGrid.step * xScale;
     const yMajorStep = yAxis.majorGrid.step * yScale;
     const xMinorStep = xAxis.minorGrid.step * xScale;
@@ -96,6 +99,8 @@ export default class Layer {
       height,
       xAxis,
       yAxis,
+      xMid,
+      yMid,
       xDistance,
       yDistance,
       xOffset,

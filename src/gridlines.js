@@ -20,7 +20,8 @@ export default class GridLines {
       if (typeof label !== "number") { return label; }
       const decimalPlaces = Utils.decimalPlaces(label);
       if (decimalPlaces === 0) { return label; }
-      if (decimalPlaces > 3) { return label.toExponential(); }
+      if (decimalPlaces > 4) { return label.toExponential(); }
+      if (decimalPlaces > 3) { return parseFloat(label).toFixed(4).toLocaleString(); }
       if (decimalPlaces > 2) { return parseFloat(label).toFixed(3).toLocaleString(); }
       return label;
     };
