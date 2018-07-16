@@ -159,12 +159,20 @@ export default class View {
   Zoom(args) {
     const { transform } = this.graph.config;
     const {
+      xStart,
       xDistance,
+      yStart,
       yDistance,
-      width,
-      height,
     } = this.getSelectedLayer().calcs;
 
+    const xMid = xStart + (xDistance / 2.0);
+    const yMid = yStart + (yDistance / 2.0);
+    
+    console.log(`xMid:${xMid}, yMid:${yMid}`);
+
+    transform.xOffset -= xMid;
+    transform.yOffset -= yMid;
+    
     transform.xScale *= args.scale;
     transform.yScale *= args.scale;
     this.draw();
