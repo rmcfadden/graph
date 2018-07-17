@@ -211,16 +211,17 @@ export default class Layer {
       });
       ctx.stroke();
 
+      //
       // Draw horizontal labels
+      //
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
 
-      // let previousX = null;
+      const dashWidth = ctx.measureText("-").width / 2.0;
+
       // TODO: remove labels if they overlap
       const mod = 1;
-
       range.forEach((p, i) => {
-        const dashWidth = ctx.measureText("-").width / 2.0;
         if ((i % mod) !== 0) { return; }
         if (grid.showLabels) {
           if (isXAxis) {
@@ -239,15 +240,25 @@ export default class Layer {
             ctx.lineWidth = 4; // StrokeWidth
             ctx.font = `${textHeight}px Arial`;
 
-            const currentX = this.xToScreen(p) - xTextOffset;
+            let currentX = this.xToScreen(p) - xTextOffset;
             const currentY = this.yToScreen(0) - yTextOffset;
 
-            if (this.isInScreenBounds({ x: currentX, y: currentY })
-              && this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY })) {
+            let isInScreenBounds = this.isInScreenBounds({ x: currentX, y: currentY })
+              && this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY });
+            if (i === 0 && !isInScreenBounds) {
+              currentX += xTextOffset + dashWidth;
+              isInScreenBounds = true;
+            }
+
+            if (i === range.length) {
+              currentX -= xTextOffset;
+              isInScreenBounds = true;
+            }
+
+            if (isInScreenBounds) {
               ctx.strokeText(pFormatted, currentX, currentY);
               ctx.fillText(pFormatted, currentX, currentY);
             }
-            // previousX = currentX;
           }
         }
       });

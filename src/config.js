@@ -6,6 +6,7 @@ export default class Config {
     this.borderStyle = "black";
     this.borderWidth = 1;
     this.backgroundStyle = "white";
+    this.useAutoGridLines = true;
     this.axes = {
       x: new Axis(),
       y: new Axis(),
