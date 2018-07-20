@@ -1,61 +1,69 @@
 export default class AutoGridConfig {
   constructor() {
     this.distances = [{
-      maxDistance: 6.25,
+      max: 1.5625,
+      minorStep: 0.02,
+      majorStep: 0.1,
+    }, {
+      max: 3.125,
+      minorStep: 0.04,
+      majorStep: 0.2,
+    }, {
+      max: 6.25,
       minorStep: 0.1,
       majorStep: 0.5,
     }, {
-      maxDistance: 12.5,
+      max: 12.5,
       minorStep: 0.2,
       majorStep: 1,
     }, {
-      maxDistance: 25,
+      max: 25,
       minorStep: 0.4,
       majorStep: 2,
     }, {
-      maxDistance: 50,
+      max: 50,
       minorStep: 0.5,
       majorStep: 5,
     }, {
-      maxDistance: 100,
+      max: 100,
       minorStep: 2,
       majorStep: 10,
     }, {
-      maxDistance: 200,
+      max: 200,
       minorStep: 4,
       majorStep: 20,
     }, {
-      maxDistance: 400,
+      max: 400,
       minorStep: 5,
       majorStep: 50,
     }, {
-      maxDistance: 800,
+      max: 800,
       minorStep: 10,
       majorStep: 100,
     }, {
-      maxDistance: 1600,
+      max: 1600,
       minorStep: 20,
       majorStep: 200,
     }, {
-      maxDistance: 3200,
+      max: 3200,
       minorStep: 100,
       majorStep: 500,
     }, {
-      maxDistance: 6400,
+      max: 6400,
       minorStep: 200,
       majorStep: 1000,
     }, {
-      maxDistance: 12800,
+      max: 12800,
       minorStep: 400,
       majorStep: 2000,
     }, {
-      maxDistance: 25600,
+      max: 25600,
       minorStep: 400,
-      majorStep: 2000,
-    }, {
-      maxDistance: 51200,
-      minorStep: 1000,
       majorStep: 5000,
+    }, {
+      max: 51200,
+      minorStep: 2000,
+      majorStep: 10000,
     }];
   }
 }

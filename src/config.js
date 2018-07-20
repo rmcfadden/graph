@@ -1,3 +1,4 @@
+import AutoGridConfig from "./autoGridConfig";
 import Axis from "./axis";
 
 export default class Config {
@@ -6,7 +7,8 @@ export default class Config {
     this.borderStyle = "black";
     this.borderWidth = 1;
     this.backgroundStyle = "white";
-    this.useAutoGridLines = true;
+    this.useAutoGrid = true;
+    this.autoGrid = new AutoGridConfig();
     this.axes = {
       x: new Axis(),
       y: new Axis(),
