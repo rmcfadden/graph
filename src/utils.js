@@ -1,10 +1,21 @@
+import lo from "lodash";
+
 export default class Utils {
   static distance(start, end) { return Math.abs(start - end); }
 
-  static closest(items, n) {
-    const closest = items.reduce((prev, _, i) => (prev === undefined
-        || (Math.abs(items[i] - n) < Math.abs(items[prev] - n)) ? i : prev), undefined);
-    return (closest > 0) ? items[closest] : undefined;
+  static closestIndex(items, n, p) {
+    return items.reduce((prev, _, i) => (prev === undefined
+        || (Math.abs(Utils.pOrO(items[i], p) - n)
+        < Math.abs(Utils.pOrO(items[prev], p) - n)) ? i : prev), undefined);
+  }
+
+  static closest(items, n, p) {
+    const closestIndex = Utils.closestIndex(items, n, p);
+    return (closestIndex > 0) ? items[closestIndex] : undefined;
+  }
+
+  static pOrO(o, p) {
+    return lo.isFunction(p) ? p(o) : o;
   }
 
   static alignRange(items, n) {

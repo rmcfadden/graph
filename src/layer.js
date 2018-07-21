@@ -75,23 +75,24 @@ export default class Layer {
     const { distances } = autoGrid;
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
     if (applyAutoGrid) {
+      //const closestXIndex = Utils.closestIndex(distances, xDistance, x => x.max);
+      //const closestYIndex = Utils.closestIndex(distances, yDistance, x => x.max);
+      const scaledXDistances = distances.map(x => xDistance / x.majorStep);
+      const scaledYDistances = distances.map(x => yDistance / x.majorStep);
       
+      const closestXIndex = Utils.closestIndex(scaledXDistances, 12);
+      const closestYIndex = Utils.closestIndex(scaledYDistances, 12);
+
+      const xGridConfig = distances[closestXIndex];
+      const yGridConfig = distances[closestYIndex];
+      console.log(xGridConfig);
+      console.log(yGridConfig);     
       
-      //const xIndex = distances.findIndex(x => xDistance <= x.max);
-      //const xGridConfig = (xIndex > 0) ? distances[xIndex] : distances[0];
-      
-      const xGridConfig = Utils.closest(distances, xDistance);
-      const yGridConfig = Utils.closest(distances, yDistance);
 
       xAxis.majorGrid.step = xGridConfig.majorStep;
       xAxis.minorGrid.step = xGridConfig.minorStep;
-
-      //const yIndex = distances.findIndex(x => yDistance <= x.max);
-      //const yGridConfig = (yIndex > 0) ? distances[yIndex] : distances[0];
       yAxis.majorGrid.step = yGridConfig.majorStep;
       yAxis.minorGrid.step = yGridConfig.minorStep;
-console.log(xGridConfig);
-console.log(yGridConfig);     
     }
 
     const xScreenScale = width / xDistance;
@@ -142,6 +143,7 @@ console.log(yGridConfig);
       xRangeMinorAdjusted,
       yRangeMinorAdjusted,
     };
+console.log(this.calcs);
   }
 
   drawAxes() {

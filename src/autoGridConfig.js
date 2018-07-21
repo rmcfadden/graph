@@ -4,7 +4,7 @@ export default class AutoStepConfig {
   }
 
   static generateDefaultDistances() {
-    const max = 12.5;
+    const max = 10;
     const majorStep = 1;
     const count = 50;
     const bigItems = [...new Array(count - 1)].reduce((p, _, i) => {

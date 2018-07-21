@@ -163,8 +163,6 @@ export default class View {
       yMid,
     } = this.getSelectedLayer().calcs;
 
-console.log(this.getSelectedLayer().calcs);
-
     //transform.xOffset = xMid;
     //transform.yOffset = yMid;    
     transform.xScale *= args.scale;
