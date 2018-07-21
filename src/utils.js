@@ -1,7 +1,7 @@
 export default class Utils {
   static distance(start, end) { return Math.abs(start - end); }
 
-  static closestTo(items, n) {
+  static closest(items, n) {
     const closest = items.reduce((prev, _, i) => (prev === undefined
         || (Math.abs(items[i] - n) < Math.abs(items[prev] - n)) ? i : prev), undefined);
     return (closest > 0) ? items[closest] : undefined;
@@ -29,7 +29,6 @@ export default class Utils {
       y: (p.y + yOffset) * yScale,
     };
   }
-
 
   static decimalPlaces(n) {
     const match = /(?:\.(\d+))?(?:[eE]([+\-]?\d+))?$/.exec(n);

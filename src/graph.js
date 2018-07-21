@@ -1,4 +1,3 @@
-//import _ from "lodash";
 import Config from "./config";
 import View from "./view";
 
@@ -9,12 +8,9 @@ export default class Graph {
     this.id = args.id;
     this.config = new Config();
     this.view = new View(this);
-    
     console.log(this.config.autoGrid.distances);
-
-    this.draw();  
+    this.draw();
   }
-  
 
   draw() {
     this.view.draw();

@@ -71,18 +71,40 @@ export default class Layer {
 
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
+    const { useAutoGrid, autoGrid } = config;
+    const { distances } = autoGrid;
+    const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
+    if (applyAutoGrid) {
+      
+      
+      //const xIndex = distances.findIndex(x => xDistance <= x.max);
+      //const xGridConfig = (xIndex > 0) ? distances[xIndex] : distances[0];
+      
+      const xGridConfig = Utils.closest(distances, xDistance);
+      const yGridConfig = Utils.closest(distances, yDistance);
+
+      xAxis.majorGrid.step = xGridConfig.majorStep;
+      xAxis.minorGrid.step = xGridConfig.minorStep;
+
+      //const yIndex = distances.findIndex(x => yDistance <= x.max);
+      //const yGridConfig = (yIndex > 0) ? distances[yIndex] : distances[0];
+      yAxis.majorGrid.step = yGridConfig.majorStep;
+      yAxis.minorGrid.step = yGridConfig.minorStep;
+console.log(xGridConfig);
+console.log(yGridConfig);     
+    }
+
     const xScreenScale = width / xDistance;
     const yScreenScale = height / yDistance;
     const xOffset = xDistance - xEnd;
     const yOffset = yDistance + yStart;
-
     const xMid = xStart + (xDistance / 2.0);
     const yMid = yStart + (yDistance / 2.0);
 
-    const xMajorStep = xAxis.majorGrid.step * xScale;
-    const yMajorStep = yAxis.majorGrid.step * yScale;
-    const xMinorStep = xAxis.minorGrid.step * xScale;
-    const yMinorStep = yAxis.minorGrid.step * yScale;
+    const xMajorStep = xAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
+    const yMajorStep = yAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
+    const xMinorStep = xAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
+    const yMinorStep = yAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
 
     const xRange = _.range(xStart, xEnd, xMajorStep);
     const yRange = _.range(yStart, yEnd, yMajorStep);

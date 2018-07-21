@@ -1,28 +1,33 @@
-export default class AutoGridConfig {
+export default class AutoStepConfig {
   constructor() {
-    this.distances = AutoGridConfig.generateDefaultDistance();
+    this.distances = AutoStepConfig.generateDefaultDistances();
   }
 
-  static generateDefaultDistance() {
+  static generateDefaultDistances() {
     const max = 12.5;
-    const majorGrid = 1;
-    const bigItems = [...new Array(100)].reduce((p, _, i) => {
-      p.push({
-        max: p[i].max * 2,
-        majorGrid: (((i - 1) % 3) === 0) ? p[i].majorGrid * 2.5 : p[i].majorGrid * 2,
-      });
+    const majorStep = 1;
+    const count = 50;
+    const bigItems = [...new Array(count - 1)].reduce((p, _, i) => {
+      const distance = {
+        //max: p[i].max * 2,
+        max: (((i - 1) % 3) === 0) ? p[i].max * 2.5 : p[i].max * 2,
+        majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep * 2.5 : p[i].majorStep * 2,
+      };
+      p.push({ ...distance, ...{ minorStep: distance.majorStep / 5 } });
       return p;
-    }, [{ max, majorGrid }]);
+    }, [{ max, majorStep }]);
 
-    const smallItems = [...new Array(100)].reduce((p, _, i) => {
-      p.push({
-        max: p[i].max / 2,
-        majorGrid: (((i - 1) % 3) === 0) ? p[i].majorGrid / 2.5 : p[i].majorGrid / 2,
-      });
+    const smallItems = [...new Array(count - 1)].reduce((p, _, i) => {
+      const distance = {
+        //max: p[i].max / 2,
+        max: (((i - 1) % 3) === 0) ? p[i].max / 2.5 : p[i].max / 2,
+        majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep / 2.5 : p[i].majorStep / 2,
+      };
+      p.push({ ...distance, ...{ minorStep: distance.majorStep / 5 } });
       return p;
-    }, [{ max: max / 2, majorGrid: majorGrid / 2 }]);
+    }, [{ max: max / 2, majorStep: majorStep / 2 }]);
 
     const reversedSmallItems = [...smallItems].reverse();
     return [...reversedSmallItems, ...bigItems];
-  };
+  }
 }
