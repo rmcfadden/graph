@@ -75,19 +75,15 @@ export default class Layer {
     const { distances } = autoGrid;
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
     if (applyAutoGrid) {
-      //const closestXIndex = Utils.closestIndex(distances, xDistance, x => x.max);
-      //const closestYIndex = Utils.closestIndex(distances, yDistance, x => x.max);
       const scaledXDistances = distances.map(x => xDistance / x.majorStep);
       const scaledYDistances = distances.map(x => yDistance / x.majorStep);
-      
       const closestXIndex = Utils.closestIndex(scaledXDistances, 12);
-      const closestYIndex = Utils.closestIndex(scaledYDistances, 12);
+      const closestYIndex = Utils.closestIndex(scaledYDistances, 8);
 
       const xGridConfig = distances[closestXIndex];
       const yGridConfig = distances[closestYIndex];
-      console.log(xGridConfig);
-      console.log(yGridConfig);     
-      
+  console.log(xGridConfig);
+  console.log(yGridConfig);      
 
       xAxis.majorGrid.step = xGridConfig.majorStep;
       xAxis.minorGrid.step = xGridConfig.minorStep;

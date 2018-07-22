@@ -11,7 +11,7 @@ export default class Config {
     this.autoGrid = new AutoGridConfig();
     this.axes = {
       x: new Axis(),
-      y: new Axis(),
+      y: new Axis({ start: -3.5, end: 3.5 }),
     };
     this.transform = {
       xScale: 1.0,

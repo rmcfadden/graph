@@ -164,10 +164,28 @@ export default class View {
     } = this.getSelectedLayer().calcs;
 
     //transform.xOffset = xMid;
-    //transform.yOffset = yMid;    
-    transform.xScale *= args.scale;
-    transform.yScale *= args.scale;
-    this.draw();
+    //transform.yOffset = yMid;
+
+    const oldXScale = transform.xScale;
+    const oldYScale = transform.yScale;
+    const newXScale = oldXScale * args.scale;
+    const newYScale = oldYScale * args.scale;
+    const diffX = newXScale - transform.xScale;
+    const diffY = newYScale - transform.yScale;
+
+    const steps = 10;
+    const incrX = diffX / steps;
+    const incrY = diffY / steps;
+console.log(`incrY: ${incrY}, incrX: ${incrX}`);
+console.log(`old: ${transform.xScale}, new: ${newXScale}, diff: ${diffX}`);
+
+    for (let i = 1; i < steps + 1; i += 1) {
+      const incrXScale = oldXScale + (i * incrX);
+      const incrYScale = oldYScale + (i * incrY);
+      transform.xScale = incrXScale;
+      transform.yScale = incrYScale;
+      this.draw();
+    }
   }
 
   draw() {
