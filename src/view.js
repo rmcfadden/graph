@@ -149,11 +149,55 @@ export default class View {
   }
 
   ZoomIn() {
-    this.Zoom({ scale: 0.5 });
+    //this.Zoom({ scale: 0.5 });
+    const { transform } = this.graph.config;
+    const scale = 0.5;
+    const endXScale = transform.xScale * scale;
+    const endYScale = transform.yScale * scale;
+    this.ZoomAnimated({
+      startXScale: transform.xScale,
+      startYScale: transform.yScale,
+      endXScale,
+      endYScale,
+      duration: 2000,
+    });
   }
 
   ZoomOut() {
-    this.Zoom({ scale: 2.0 });
+    //this.Zoom({ scale: 2.0 });
+    const { transform } = this.graph.config;
+    const scale = 2.0;
+    const endXScale = transform.xScale * scale;
+    const endYScale = transform.yScale * scale;
+    this.ZoomAnimated({
+      startXScale: transform.xScale,
+      startYScale: transform.yScale,
+      endXScale,
+      endYScale,
+      duration: 2000,
+    });
+  }
+
+  ZoomAnimated(args) {
+    const frame = requestAnimationFrame((timestamp) => {
+      const progress = Math.min(timestamp / args.duration, 1);
+      const xScale = args.startXScale + (args.endXScale - args.startXScale) * progress;
+      const yScale = args.startYScale + (args.endYScale - args.startYScale) * progress;
+
+      this.Zoom({ xScale, yScale });
+
+console.log(`timestamp: ${timestamp}, args.duration: ${args.duration}`);
+
+      if (timestamp < args.duration) {
+        this.ZoomAnimated({
+          startXScale: args.startXScale,
+          startYScale: args.startYScale,
+          duration: args.duration,
+          endXScale: args.endXScale,
+          endYScale: args.endYScale,
+        });
+      }
+    });
   }
 
   Zoom(args) {
@@ -166,26 +210,9 @@ export default class View {
     //transform.xOffset = xMid;
     //transform.yOffset = yMid;
 
-    const oldXScale = transform.xScale;
-    const oldYScale = transform.yScale;
-    const newXScale = oldXScale * args.scale;
-    const newYScale = oldYScale * args.scale;
-    const diffX = newXScale - transform.xScale;
-    const diffY = newYScale - transform.yScale;
-
-    const steps = 10;
-    const incrX = diffX / steps;
-    const incrY = diffY / steps;
-console.log(`incrY: ${incrY}, incrX: ${incrX}`);
-console.log(`old: ${transform.xScale}, new: ${newXScale}, diff: ${diffX}`);
-
-    for (let i = 1; i < steps + 1; i += 1) {
-      const incrXScale = oldXScale + (i * incrX);
-      const incrYScale = oldYScale + (i * incrY);
-      transform.xScale = incrXScale;
-      transform.yScale = incrYScale;
-      this.draw();
-    }
+    transform.xScale = args.xScale;
+    transform.yScale = args.yScale;
+    this.draw();
   }
 
   draw() {
