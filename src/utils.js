@@ -14,6 +14,13 @@ export default class Utils {
     return (closestIndex > 0) ? items[closestIndex] : undefined;
   }
 
+  static range(start, end, step = 1) {
+    const distance = Utils.distance(start, end) / step;
+console.log(`distance: ${distance}, step: ${step}`);
+//https://github.com/MikeMcl/decimal.js/
+    return [...Array(Math.ceil(distance) + 1).keys()].map(x => (x * step) + start);
+  }
+
   static pOrO(o, p) {
     return lo.isFunction(p) ? p(o) : o;
   }
@@ -42,7 +49,7 @@ export default class Utils {
   }
 
   static decimalPlaces(n) {
-    const match = /(?:\.(\d+))?(?:[eE]([+\-]?\d+))?$/.exec(n);
+    const match = /(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(n);
     if (!match) { return 0; }
     // 1.234e+2 has 1 fraction digit and '234'.length -  2 == 1
     // 1.234e-2 has 5 fraction digit and '234'.length - -2 == 5

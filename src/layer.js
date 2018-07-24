@@ -82,8 +82,8 @@ export default class Layer {
 
       const xGridConfig = distances[closestXIndex];
       const yGridConfig = distances[closestYIndex];
-  console.log(xGridConfig);
-  console.log(yGridConfig);      
+  //console.log(xGridConfig);
+  //console.log(yGridConfig);
 
       xAxis.majorGrid.step = xGridConfig.majorStep;
       xAxis.minorGrid.step = xGridConfig.minorStep;
@@ -103,8 +103,8 @@ export default class Layer {
     const xMinorStep = xAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
     const yMinorStep = yAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
 
-    const xRange = _.range(xStart, xEnd, xMajorStep);
-    const yRange = _.range(yStart, yEnd, yMajorStep);
+    const xRange = Utils.range(xStart, xEnd + 1, xMajorStep);
+    const yRange = Utils.range(yStart - 1, yEnd, yMajorStep);
     const xRangeAdjusted = Utils.alignRange(xRange, xMajorStep);
     const yRangeAdjusted = Utils.alignRange(yRange, yMajorStep);
 
@@ -138,6 +138,8 @@ export default class Layer {
       yRangeMinor,
       xRangeMinorAdjusted,
       yRangeMinorAdjusted,
+      xMajorStep,
+      yMajorStep,
     };
 console.log(this.calcs);
   }

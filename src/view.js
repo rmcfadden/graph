@@ -149,24 +149,15 @@ export default class View {
   }
 
   ZoomIn() {
-    //this.Zoom({ scale: 0.5 });
-    const { transform } = this.graph.config;
-    const scale = 0.5;
-    const endXScale = transform.xScale * scale;
-    const endYScale = transform.yScale * scale;
-    this.ZoomAnimated({
-      startXScale: transform.xScale,
-      startYScale: transform.yScale,
-      endXScale,
-      endYScale,
-      duration: 2000,
-    });
+    this.StartZoomAnimated(0.5);
   }
 
   ZoomOut() {
-    //this.Zoom({ scale: 2.0 });
+    this.StartZoomAnimated(2.0);
+  }
+
+  StartZoomAnimated(scale) {
     const { transform } = this.graph.config;
-    const scale = 2.0;
     const endXScale = transform.xScale * scale;
     const endYScale = transform.yScale * scale;
     this.ZoomAnimated({
@@ -174,22 +165,23 @@ export default class View {
       startYScale: transform.yScale,
       endXScale,
       endYScale,
-      duration: 2000,
+      duration: 250,
     });
   }
 
   ZoomAnimated(args) {
-    const frame = requestAnimationFrame((timestamp) => {
-      const progress = Math.min(timestamp / args.duration, 1);
+    requestAnimationFrame((timestamp) => {
+      const start = args.start || timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min((elapsed) / args.duration, 1);
       const xScale = args.startXScale + (args.endXScale - args.startXScale) * progress;
       const yScale = args.startYScale + (args.endYScale - args.startYScale) * progress;
 
       this.Zoom({ xScale, yScale });
 
-console.log(`timestamp: ${timestamp}, args.duration: ${args.duration}`);
-
-      if (timestamp < args.duration) {
+      if (elapsed < args.duration) {
         this.ZoomAnimated({
+          start,
           startXScale: args.startXScale,
           startYScale: args.startYScale,
           duration: args.duration,
