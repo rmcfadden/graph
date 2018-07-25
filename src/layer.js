@@ -103,8 +103,8 @@ export default class Layer {
     const xMinorStep = xAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
     const yMinorStep = yAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
 
-    const xRange = Utils.range(xStart, xEnd + 1, xMajorStep);
-    const yRange = Utils.range(yStart - 1, yEnd, yMajorStep);
+    const xRange = Utils.range(xStart, xEnd, xMajorStep);
+    const yRange = Utils.range(yStart, yEnd, yMajorStep);
     const xRangeAdjusted = Utils.alignRange(xRange, xMajorStep);
     const yRangeAdjusted = Utils.alignRange(yRange, yMajorStep);
 

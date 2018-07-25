@@ -1,3 +1,4 @@
+import { Decimal } from "decimal.js";
 import lo from "lodash";
 
 export default class Utils {
@@ -15,10 +16,13 @@ export default class Utils {
   }
 
   static range(start, end, step = 1) {
-    const distance = Utils.distance(start, end) / step;
-console.log(`distance: ${distance}, step: ${step}`);
+    const distance = Utils.distance(start, end);
+    //const rangeItems = distance / step;
+    const rangeCount = Decimal(distance).dividedBy(step).ceil().toNumber();
+
+console.log(`Start: ${start}, End: ${end}, Step: ${step}, distance: ${distance}, rangeCount: ${rangeCount}`);
 //https://github.com/MikeMcl/decimal.js/
-    return [...Array(Math.ceil(distance) + 1).keys()].map(x => (x * step) + start);
+    return [...Array(rangeCount + 1).keys()].map(x => (x * step) + start);
   }
 
   static pOrO(o, p) {
