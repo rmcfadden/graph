@@ -82,9 +82,6 @@ export default class Layer {
 
       const xGridConfig = distances[closestXIndex];
       const yGridConfig = distances[closestYIndex];
-  //console.log(xGridConfig);
-  //console.log(yGridConfig);
-
       xAxis.majorGrid.step = xGridConfig.majorStep;
       xAxis.minorGrid.step = xGridConfig.minorStep;
       yAxis.majorGrid.step = yGridConfig.majorStep;
@@ -149,6 +146,7 @@ console.log(this.calcs);
     const { ctx } = this;
     const {
       xAxis,
+      yAxis,
       xStart,
       xEnd,
       yStart,
@@ -161,18 +159,27 @@ console.log(this.calcs);
     //this.drawGrid({ isMajor: false });
     //this.drawGrid({ axisDirection: "y", isMajor: false });
 
+    // Draw major gridlines
     this.drawGrid();
     this.drawGrid({ axisDirection: "y" });
 
-    // Draw origin
+    // Grid
     ctx.beginPath();
-    ctx.strokeStyle = xAxis.style || config.borderStyle;
-    ctx.lineWidth = 1;
 
-    ctx.moveTo(this.adjust(this.xToScreen(xStart)), this.adjust(this.yToScreen(0)));
-    ctx.lineTo(this.adjust(this.xToScreen(xEnd)), this.adjust(this.yToScreen(0)));
-    ctx.moveTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yStart)));
-    ctx.lineTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yEnd)));
+    if (yAxis.show) {
+      ctx.moveTo(this.adjust(this.xToScreen(xStart)), this.adjust(this.yToScreen(0)));
+      ctx.lineTo(this.adjust(this.xToScreen(xEnd)), this.adjust(this.yToScreen(0)));
+      ctx.strokeStyle = yAxis.style;
+      ctx.lineWidth = yAxis.width;
+    }
+
+    if (yAxis.show) {
+      ctx.moveTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yStart)));
+      ctx.lineTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yEnd)));
+      ctx.strokeStyle = yAxis.style;
+      ctx.lineWidth = yAxis.width;
+    }
+    
     ctx.stroke();
   }
 
@@ -209,8 +216,8 @@ console.log(this.calcs);
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
 
       ctx.beginPath();
-      ctx.strokeStyle = grid.style || config.borderStyle;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 0.5;
 
       const axisStart = isXAxis ? yStart : xStart;
       const axisEnd = isXAxis ? yEnd : xEnd;
@@ -228,14 +235,13 @@ console.log(this.calcs);
         const yStartLine = isXAxis ? start : fixed;
         const yEndLine = isXAxis ? end : fixed;
 
-        ctx.moveTo(this.adjust(xStartLine), this.adjust(yStartLine));
-        ctx.lineTo(this.adjust(xEndLine), this.adjust(yEndLine));
+        // 0.5 aligns it!
+        ctx.moveTo(this.adjust(xStartLine) + 0.5, this.adjust(yStartLine) + 0.5);
+        ctx.lineTo(this.adjust(xEndLine) + 0.5, this.adjust(yEndLine) + 0.5);
       });
       ctx.stroke();
 
-      //
       // Draw horizontal labels
-      //
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
 

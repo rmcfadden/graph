@@ -17,11 +17,7 @@ export default class Utils {
 
   static range(start, end, step = 1) {
     const distance = Utils.distance(start, end);
-    //const rangeItems = distance / step;
     const rangeCount = Decimal(distance).dividedBy(step).ceil().toNumber();
-
-console.log(`Start: ${start}, End: ${end}, Step: ${step}, distance: ${distance}, rangeCount: ${rangeCount}`);
-//https://github.com/MikeMcl/decimal.js/
     return [...Array(rangeCount + 1).keys()].map(x => (x * step) + start);
   }
 
