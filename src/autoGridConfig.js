@@ -6,6 +6,8 @@ export default class AutoStepConfig {
   static generateDefaultDistances() {
     const max = 10;
     const majorStep = 1;
+    const minorStep = majorStep / 5.0;
+ 
     const count = 50;
     const bigItems = [...new Array(count - 1)].reduce((p, _, i) => {
       const distance = {
@@ -14,7 +16,7 @@ export default class AutoStepConfig {
       };
       p.push({ ...distance, ...{ minorStep: distance.majorStep / 5 } });
       return p;
-    }, [{ max, majorStep }]);
+    }, [{ max, majorStep, minorStep }]);
 
     const smallItems = [...new Array(count - 1)].reduce((p, _, i) => {
       const distance = {
@@ -23,7 +25,7 @@ export default class AutoStepConfig {
       };
       p.push({ ...distance, ...{ minorStep: distance.majorStep / 5 } });
       return p;
-    }, [{ max, majorStep }]);
+    }, [{ max, majorStep, minorStep }]);
 
     const reversedSmallItems = [...smallItems].reverse();
     return [...reversedSmallItems, ...bigItems];

@@ -1,21 +1,24 @@
 import Utils from "./utils";
 
-export default class GridLines {
+export default class Grid {
   constructor({
     type = "grid",
     show = true,
     style = "grey",
     step = 1,
+    width = 1,
     showLabels = false,
   } = {}) {
     this.type = type;
     this.show = show;
     this.style = style;
     this.step = step;
+    this.width = width;
     this.showLabels = showLabels;
     this.labelStyle = "black";
     this.labelsInNegative = true;
     this.textHeight = 16;
+
     this.labelFormatter = (label) => {
       if (typeof label !== "number") { return label; }
       const decimalPlaces = Utils.decimalPlaces(label);

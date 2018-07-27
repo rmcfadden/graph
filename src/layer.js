@@ -12,7 +12,11 @@ export default class Layer {
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
     this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
     this.screenToY = y => this.calcs.yOffset - (y / this.calcs.yScreenScale);
-    this.adjust = x => parseInt(x, 0);
+    this.adjust = (x, lineWidth) => {
+      const i = parseInt(x, 0);
+      return lineWidth % 2 === 1 || lineWidth < 1.0
+        ? i + 0.5 : i;
+    };
 
     this.isInBounds = (p) => {
       const { xAxis, yAxis } = this.calcs;
@@ -44,7 +48,6 @@ export default class Layer {
     const { backgroundStyle, borderStyle, borderWidth } = this.graph.config;
     const { width, height } = this.canvas;
     const { ctx } = this;
-
     ctx.fillStyle = backgroundStyle;
     ctx.fillRect(0, 0, width, height);
     ctx.strokeStyle = borderStyle;
@@ -137,12 +140,13 @@ export default class Layer {
       yRangeMinorAdjusted,
       xMajorStep,
       yMajorStep,
+      xMinorStep,
+      yMinorStep,
     };
 console.log(this.calcs);
   }
 
   drawAxes() {
-    const { config } = this.graph;
     const { ctx } = this;
     const {
       xAxis,
@@ -156,8 +160,8 @@ console.log(this.calcs);
     ctx.lineWidth = xAxis.width;
 
     // Draw minor gridlines
-    //this.drawGrid({ isMajor: false });
-    //this.drawGrid({ axisDirection: "y", isMajor: false });
+    this.drawGrid({ isMajor: false });
+    this.drawGrid({ axisDirection: "y", isMajor: false });
 
     // Draw major gridlines
     this.drawGrid();
@@ -167,19 +171,25 @@ console.log(this.calcs);
     ctx.beginPath();
 
     if (yAxis.show) {
-      ctx.moveTo(this.adjust(this.xToScreen(xStart)), this.adjust(this.yToScreen(0)));
-      ctx.lineTo(this.adjust(this.xToScreen(xEnd)), this.adjust(this.yToScreen(0)));
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
+      const { lineWidth } = ctx;
+      ctx.moveTo(this.adjust(this.xToScreen(xStart), lineWidth),
+        this.adjust(this.yToScreen(0), lineWidth));
+      ctx.lineTo(this.adjust(this.xToScreen(xEnd), lineWidth),
+        this.adjust(this.yToScreen(0), lineWidth));
     }
 
     if (yAxis.show) {
-      ctx.moveTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yStart)));
-      ctx.lineTo(this.adjust(this.xToScreen(0)), this.adjust(this.yToScreen(yEnd)));
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
+      const { lineWidth } = ctx;
+      ctx.moveTo(this.adjust(this.xToScreen(0), lineWidth),
+        this.adjust(this.yToScreen(yStart), lineWidth));
+      ctx.lineTo(this.adjust(this.xToScreen(0), lineWidth),
+        this.adjust(this.yToScreen(yEnd), lineWidth));
     }
-    
+
     ctx.stroke();
   }
 
@@ -216,8 +226,8 @@ console.log(this.calcs);
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
 
       ctx.beginPath();
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = grid.style;
+      ctx.lineWidth = grid.width;
 
       const axisStart = isXAxis ? yStart : xStart;
       const axisEnd = isXAxis ? yEnd : xEnd;
@@ -234,10 +244,9 @@ console.log(this.calcs);
         const xEndLine = isXAxis ? fixed : end;
         const yStartLine = isXAxis ? start : fixed;
         const yEndLine = isXAxis ? end : fixed;
-
-        // 0.5 aligns it!
-        ctx.moveTo(this.adjust(xStartLine) + 0.5, this.adjust(yStartLine) + 0.5);
-        ctx.lineTo(this.adjust(xEndLine) + 0.5, this.adjust(yEndLine) + 0.5);
+        const { lineWidth } = ctx;
+        ctx.moveTo(this.adjust(xStartLine, lineWidth), this.adjust(yStartLine, lineWidth));
+        ctx.lineTo(this.adjust(xEndLine, lineWidth), this.adjust(yEndLine, lineWidth));
       });
       ctx.stroke();
 
