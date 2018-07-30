@@ -7,7 +7,6 @@ export default class AutoStepConfig {
     const max = 10;
     const majorStep = 1;
     const minorStep = majorStep / 5.0;
- 
     const count = 50;
     const bigItems = [...new Array(count - 1)].reduce((p, _, i) => {
       const distance = {
