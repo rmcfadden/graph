@@ -8,7 +8,6 @@ export default class Graph {
     this.id = args.id;
     this.config = new Config();
     this.view = new View(this);
-console.log(this.config.autoGrid.distances);
     this.draw();
   }
 

@@ -57,6 +57,7 @@ export default class Layer {
 
   preCalculations() {
     const { config } = this.graph;
+    const { calcs } = this;
     const { width, height } = this.canvas;
     const { x: xAxis, y: yAxis } = config.axes;
     const { transform } = config;
@@ -74,14 +75,20 @@ export default class Layer {
 
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
-    const { useAutoGrid, autoGrid } = config;
-    const { distances } = autoGrid;
+    const { useAutoGrid, autoGrid } = config;    
+    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height)
+      ? autoGrid.getDistances() : calcs.distances;
+
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
     if (applyAutoGrid) {
       const scaledXDistances = distances.map(x => xDistance / x.majorStep);
       const scaledYDistances = distances.map(x => yDistance / x.majorStep);
-      const closestXIndex = Utils.closestIndex(scaledXDistances, 12);
-      const closestYIndex = Utils.closestIndex(scaledYDistances, 8);
+
+      const gridCellLength = 120;
+      const xGridLines = Math.floor(width / gridCellLength);
+      const yGridLines = Math.floor(height / gridCellLength);
+      const closestXIndex = Utils.closestIndex(scaledXDistances, xGridLines);
+      const closestYIndex = Utils.closestIndex(scaledYDistances, yGridLines);
 
       const xGridConfig = distances[closestXIndex];
       const yGridConfig = distances[closestYIndex];
@@ -142,6 +149,7 @@ export default class Layer {
       yMajorStep,
       xMinorStep,
       yMinorStep,
+      distances,
     };
 console.log(this.calcs);
   }
