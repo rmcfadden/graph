@@ -104,7 +104,7 @@ export default class Layer {
     const yOffset = yDistance + yStart;
     const xMid = xStart + (xDistance / 2.0);
     const yMid = yStart + (yDistance / 2.0);
-
+  
     const xMajorStep = xAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
     const yMajorStep = yAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
     const xMinorStep = xAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);

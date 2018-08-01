@@ -6,7 +6,7 @@ export default class Grid {
     show = true,
     style = "grey",
     step = 1,
-    width = 1,
+    width = 0.5,
     showLabels = false,
   } = {}) {
     this.type = type;

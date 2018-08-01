@@ -176,7 +176,6 @@ export default class View {
       const progress = Math.min((elapsed) / args.duration, 1);
       const xScale = args.startXScale + (args.endXScale - args.startXScale) * progress;
       const yScale = args.startYScale + (args.endYScale - args.startYScale) * progress;
-
       this.Zoom({ xScale, yScale });
 
       if (elapsed < args.duration) {
