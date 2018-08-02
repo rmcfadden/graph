@@ -75,8 +75,8 @@ export default class Layer {
 
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
-    const { useAutoGrid, autoGrid } = config;    
-    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height)
+    const { useAutoGrid, autoGrid } = config;
+    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height) 
       ? autoGrid.getDistances() : calcs.distances;
 
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
@@ -104,7 +104,6 @@ export default class Layer {
     const yOffset = yDistance + yStart;
     const xMid = xStart + (xDistance / 2.0);
     const yMid = yStart + (yDistance / 2.0);
-  
     const xMajorStep = xAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
     const yMajorStep = yAxis.majorGrid.step * (applyAutoGrid ? 1 : xScale);
     const xMinorStep = xAxis.minorGrid.step * (applyAutoGrid ? 1 : yScale);
