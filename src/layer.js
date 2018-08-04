@@ -1,5 +1,6 @@
 import _ from "lodash";
 import Utils from "./utils";
+import labelFormatter from "./labelFormatter";
 
 export default class Layer {
   constructor(view) {
@@ -246,7 +247,6 @@ console.log(this.calcs);
           : -1 * rulerLength;
         const end = (grid.type === gridType) ? toScreen(axisEnd)
           : rulerLength;
-
         const xStartLine = isXAxis ? fixed : start;
         const xEndLine = isXAxis ? fixed : end;
         const yStartLine = isXAxis ? start : fixed;
@@ -269,7 +269,8 @@ console.log(this.calcs);
         if ((i % mod) !== 0) { return; }
         if (grid.showLabels) {
           if (isXAxis) {
-            const pFormatted = grid.labelFormatter ? grid.labelFormatter(p) : p;
+            const labelFormat = labelFormatter.format;
+            const pFormatted = labelFormat ? labelFormat(p) : p;
             const textMetrics = ctx.measureText(pFormatted);
             let xTextOffset = (textMetrics.width / 2.0);
             if (p < 0) {
