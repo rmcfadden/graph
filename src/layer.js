@@ -163,7 +163,7 @@ console.log(this.calcs);
       yStart,
       yEnd,
     } = this.calcs;
-
+    
     ctx.lineWidth = xAxis.width;
 
     // Draw minor gridlines
