@@ -6,8 +6,6 @@ export default class GraphLayer {
   constructor(view) {
     this.view = view;
     this.graph = view.graph;
-    this.canvas = document.getElementById(this.graph.canvasId);
-    this.ctx = this.canvas.getContext("2d");
 
     this.calcs = {};
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
@@ -16,8 +14,7 @@ export default class GraphLayer {
     this.screenToY = y => this.calcs.yOffset - (y / this.calcs.yScreenScale);
     this.adjust = (x, lineWidth) => {
       const i = parseInt(x, 0);
-      return lineWidth % 2 === 1 || lineWidth < 1.0
-        ? i + 0.5 : i;
+      return lineWidth % 2 === 1 || lineWidth < 1.0 ? i + 0.5 : i;
     };
 
     this.isInBounds = (p) => {
@@ -38,9 +35,13 @@ export default class GraphLayer {
     };
   }
 
+  setCanvas(id) {
+    this.canvas = document.getElementById(id);
+    this.ctx = this.canvas.getContext("2d");
+  }
+
   draw() {
     if (!this.graph) { throw new Error("this.graph cannot be empty"); }
-    if (!this.graph.canvasId) { throw new Error("this.graph.canvasId cannot be empty"); }
     this.preCalculations();
     this.drawBackground();
     this.drawAxes();
@@ -78,7 +79,7 @@ export default class GraphLayer {
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
     const { useAutoGrid, autoGrid } = config;
-    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height) 
+    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height)
       ? autoGrid.getDistances() : calcs.distances;
 
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;

@@ -6,14 +6,11 @@ export default class TopLayer {
   constructor(view) {
     this.view = view;
     this.graph = view.graph;
-    this.canvas = document.getElementById(`${this.graph.canvasId}-top`);
-    this.ctx = this.canvas.getContext("2d");
 
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
     this.elements = [];
-  
     this.drawSvgImage = (ctx, src, x, y, w, h, name) => {
       const image = new Image();
       image.onload = () => ctx.drawImage(image, x, y, w, h);
@@ -28,6 +25,11 @@ export default class TopLayer {
       });
     };
 
+  }
+
+  setCanvas(id) {
+    this.canvas = document.getElementById(id);
+    this.ctx = this.canvas.getContext("2d");
     this.canvas.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
@@ -35,7 +37,7 @@ export default class TopLayer {
       const startY = e.offsetY - y;
       this.startCoords = { x: startX, y: startY };
     };
-  
+
     this.canvas.onmouseup = (e) => {
       this.isMouseDown = false;
       const { x, y } = this.startCoords;
@@ -103,8 +105,6 @@ export default class TopLayer {
     this.canvas.ontouchend = () => {
     };
   }
-
-
 
   draw() {
     //this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

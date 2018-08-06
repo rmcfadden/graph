@@ -5,7 +5,7 @@ export default class labelFormatter {
     if (typeof label !== "number") { return label; }
     const labelUnsigned = label < 0 ? label * -1 : label;
 
-    if (labelUnsigned !== 0 && (labelUnsigned >= 1000000 || labelUnsigned <= 0.001)) { 
+    if (labelUnsigned !== 0 && (labelUnsigned >= 1000000 || labelUnsigned <= 0.001)) {
       return label.toExponential(3);
     }
 
