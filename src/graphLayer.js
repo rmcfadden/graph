@@ -1,11 +1,11 @@
 import _ from "lodash";
 import Utils from "./utils";
 import labelFormatter from "./labelFormatter";
+import Layer from "./layer";
 
-export default class GraphLayer {
+export default class GraphLayer extends Layer {
   constructor(view) {
-    this.view = view;
-    this.graph = view.graph;
+    super(view);
 
     this.calcs = {};
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
@@ -33,11 +33,6 @@ export default class GraphLayer {
       return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd))
         && Utils.isBetween(p.y, this.yToScreen(yEnd), this.yToScreen(yStart));
     };
-  }
-
-  setCanvas(id) {
-    this.canvas = document.getElementById(id);
-    this.ctx = this.canvas.getContext("2d");
   }
 
   draw() {
@@ -165,7 +160,7 @@ export default class GraphLayer {
       yStart,
       yEnd,
     } = this.calcs;
-    
+
     ctx.lineWidth = xAxis.width;
 
     // Draw minor gridlines

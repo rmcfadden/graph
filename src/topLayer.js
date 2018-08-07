@@ -1,11 +1,11 @@
 import ZoomInSvg from "./images/zoom_in-24px.svg";
 import ZoomOutSvg from "./images/zoom_out-24px.svg";
 import SettingsSvg from "./images/settings-20px.svg";
+import Layer from "./layer";
 
-export default class TopLayer {
+export default class TopLayer extends Layer {
   constructor(view) {
-    this.view = view;
-    this.graph = view.graph;
+    super(view);
 
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
@@ -24,12 +24,10 @@ export default class TopLayer {
         name,
       });
     };
-
   }
 
   setCanvas(id) {
-    this.canvas = document.getElementById(id);
-    this.ctx = this.canvas.getContext("2d");
+    super.setCanvas(id);
     this.canvas.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
