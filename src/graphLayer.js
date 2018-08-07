@@ -2,41 +2,20 @@ import _ from "lodash";
 import Utils from "./utils";
 import labelFormatter from "./labelFormatter";
 import Layer from "./layer";
+import GraphCalcs from "./graphCalcs";
+
 
 export default class GraphLayer extends Layer {
   constructor(view) {
     super(view);
-
-    this.calcs = {};
-    this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
-    this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
-    this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
-    this.screenToY = y => this.calcs.yOffset - (y / this.calcs.yScreenScale);
+    this.calcs = null;
     this.adjust = (x, lineWidth) => {
       const i = parseInt(x, 0);
       return lineWidth % 2 === 1 || lineWidth < 1.0 ? i + 0.5 : i;
     };
-
-    this.isInBounds = (p) => {
-      const { xAxis, yAxis } = this.calcs;
-      return Utils.isBetween(p.x, xAxis.start, xAxis.end)
-        && Utils.isBetween(p.y, yAxis.start, yAxis.end);
-    };
-
-    this.isInScreenBounds = (p) => {
-      const {
-        xStart,
-        xEnd,
-        yStart,
-        yEnd,
-      } = this.calcs;
-      return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd))
-        && Utils.isBetween(p.y, this.yToScreen(yEnd), this.yToScreen(yStart));
-    };
   }
 
   draw() {
-    if (!this.graph) { throw new Error("this.graph cannot be empty"); }
     this.preCalculations();
     this.drawBackground();
     this.drawAxes();
@@ -54,6 +33,7 @@ export default class GraphLayer extends Layer {
   }
 
   preCalculations() {
+    if (!this.graph) { throw new Error("this.graph cannot be empty"); }
     const { config } = this.graph;
     const { calcs } = this;
     const { width, height } = this.canvas;
@@ -74,7 +54,8 @@ export default class GraphLayer extends Layer {
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
     const { useAutoGrid, autoGrid } = config;
-    const distances = !calcs.distances || (width !== calcs.width || height !== calcs.height)
+    const distances = !this.calls || !calcs.distances 
+      || (width !== calcs.width || height !== calcs.height)
       ? autoGrid.getDistances() : calcs.distances;
 
     const applyAutoGrid = useAutoGrid && distances && distances.length > 0;
@@ -116,7 +97,7 @@ export default class GraphLayer extends Layer {
     const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xAxis.minorGrid.step);
     const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yAxis.minorGrid.step);
 
-    this.calcs = {
+    this.calcs = new GraphCalcs({
       width,
       height,
       xAxis,
@@ -146,12 +127,14 @@ export default class GraphLayer extends Layer {
       xMinorStep,
       yMinorStep,
       distances,
-    };
+    });
+
     this.graph.calcs = this.calcs;
   }
 
   drawAxes() {
     const { ctx } = this;
+    const { calcs } = this;
     const {
       xAxis,
       yAxis,
@@ -159,7 +142,7 @@ export default class GraphLayer extends Layer {
       xEnd,
       yStart,
       yEnd,
-    } = this.calcs;
+    } = calcs;
 
     ctx.lineWidth = xAxis.width;
 
@@ -178,20 +161,20 @@ export default class GraphLayer extends Layer {
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(this.xToScreen(xStart), lineWidth),
-        this.adjust(this.yToScreen(0), lineWidth));
-      ctx.lineTo(this.adjust(this.xToScreen(xEnd), lineWidth),
-        this.adjust(this.yToScreen(0), lineWidth));
+      ctx.moveTo(this.adjust(calcs.xToScreen(xStart), lineWidth),
+        this.adjust(calcs.yToScreen(0), lineWidth));
+      ctx.lineTo(this.adjust(calcs.xToScreen(xEnd), lineWidth),
+        this.adjust(calcs.yToScreen(0), lineWidth));
     }
 
     if (yAxis.show) {
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(this.xToScreen(0), lineWidth),
-        this.adjust(this.yToScreen(yStart), lineWidth));
-      ctx.lineTo(this.adjust(this.xToScreen(0), lineWidth),
-        this.adjust(this.yToScreen(yEnd), lineWidth));
+      ctx.moveTo(this.adjust(calcs.xToScreen(0), lineWidth),
+        this.adjust(calcs.yToScreen(yStart), lineWidth));
+      ctx.lineTo(this.adjust(calcs.xToScreen(0), lineWidth),
+        this.adjust(calcs.yToScreen(yEnd), lineWidth));
     }
 
     ctx.stroke();
@@ -203,6 +186,7 @@ export default class GraphLayer extends Layer {
   } = {}) {
     const { config } = this.graph;
     const { ctx } = this;
+    const { calcs } = this;
     const {
       xRangeAdjusted,
       yRangeAdjusted,
@@ -214,7 +198,7 @@ export default class GraphLayer extends Layer {
       xEnd,
       yStart,
       yEnd,
-    } = this.calcs;
+    } = calcs;
 
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ? xAxis : yAxis;
@@ -226,7 +210,7 @@ export default class GraphLayer extends Layer {
       if (!isXAxis) {
         range = isMajor ? yRangeAdjusted : yRangeMinorAdjusted;
       }
-      const toScreen = isXAxis ? this.yToScreen : this.xToScreen;
+      const toScreen = isXAxis ? calcs.yToScreen : calcs.xToScreen;
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
 
       ctx.beginPath();
@@ -237,7 +221,7 @@ export default class GraphLayer extends Layer {
       const axisEnd = isXAxis ? yEnd : xEnd;
 
       range.forEach((p) => {
-        const fixed = isXAxis ? this.xToScreen(p) : this.yToScreen(p);
+        const fixed = isXAxis ? calcs.xToScreen(p) : calcs.yToScreen(p);
         const gridType = "grid";
         const start = (grid.type === gridType) ? toScreen(axisStart)
           : -1 * rulerLength;
@@ -281,11 +265,11 @@ export default class GraphLayer extends Layer {
             ctx.lineWidth = 4; // StrokeWidth
             ctx.font = `${textHeight}px Arial`;
 
-            let currentX = this.xToScreen(p) - xTextOffset;
-            const currentY = this.yToScreen(0) - yTextOffset;
+            let currentX = calcs.xToScreen(p) - xTextOffset;
+            const currentY = calcs.yToScreen(0) - yTextOffset;
 
-            let isInScreenBounds = this.isInScreenBounds({ x: currentX, y: currentY })
-              && this.isInScreenBounds({ x: this.xToScreen(p) + xTextOffset, y: currentY });
+            let isInScreenBounds = calcs.isInScreenBounds({ x: currentX, y: currentY })
+              && calcs.isInScreenBounds({ x: calcs.xToScreen(p) + xTextOffset, y: currentY });
             if (i === 0 && !isInScreenBounds) {
               currentX += xTextOffset + dashWidth;
               isInScreenBounds = true;
