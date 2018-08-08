@@ -55,4 +55,9 @@ export default class Utils {
     // 1.234e-2 has 5 fraction digit and '234'.length - -2 == 5
     return Math.max(0, (match[1] === "0" ? 0 : (match[1] || "").length) - (match[2] || 0));
   }
+
+  static adjust(x, lineWidth) {
+    const i = parseInt(x, 0);
+    return lineWidth % 2 === 1 || lineWidth < 1.0 ? i + 0.5 : i;
+  };
 }
