@@ -7,7 +7,6 @@ export default class GridProvider {
   draw() {
     const { ctx } = this;
     const {
-      xAxis,
       yAxis,
       xStart,
       xEnd,
