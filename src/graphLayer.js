@@ -1,18 +1,14 @@
 import _ from "lodash";
 import Utils from "./utils";
-import labelFormatter from "./labelFormatter";
 import Layer from "./layer";
 import GraphCalcs from "./graphCalcs";
-
+import AxesProvider from "./axesProvider";
+import GridProvider from "./gridProvider";
 
 export default class GraphLayer extends Layer {
   constructor(view) {
     super(view);
     this.calcs = null;
-    this.adjust = (x, lineWidth) => {
-      const i = parseInt(x, 0);
-      return lineWidth % 2 === 1 || lineWidth < 1.0 ? i + 0.5 : i;
-    };
   }
 
   draw() {
@@ -135,158 +131,22 @@ export default class GraphLayer extends Layer {
   drawAxes() {
     const { ctx } = this;
     const { calcs } = this;
-    const {
-      xAxis,
-      yAxis,
-      xStart,
-      xEnd,
-      yStart,
-      yEnd,
-    } = calcs;
 
-    ctx.lineWidth = xAxis.width;
+    var gridProv = new GridProvider({
+      ctx,
+      calcs,
+      graph: this.graph,
+    });
 
-    // Draw minor gridlines
-    this.drawGrid({ isMajor: false });
-    this.drawGrid({ axisDirection: "y", isMajor: false });
+    gridProv.draw({ isMajor: false });
+    gridProv.draw({ axisDirection: "y", isMajor: false });
+    gridProv.draw();
+    gridProv.draw({ axisDirection: "y" });
 
-    // Draw major gridlines
-    this.drawGrid();
-    this.drawGrid({ axisDirection: "y" });
-
-    // Grid
-    ctx.beginPath();
-
-    if (yAxis.show) {
-      ctx.strokeStyle = yAxis.style;
-      ctx.lineWidth = yAxis.width;
-      const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(calcs.xToScreen(xStart), lineWidth),
-        this.adjust(calcs.yToScreen(0), lineWidth));
-      ctx.lineTo(this.adjust(calcs.xToScreen(xEnd), lineWidth),
-        this.adjust(calcs.yToScreen(0), lineWidth));
-    }
-
-    if (yAxis.show) {
-      ctx.strokeStyle = yAxis.style;
-      ctx.lineWidth = yAxis.width;
-      const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(calcs.xToScreen(0), lineWidth),
-        this.adjust(calcs.yToScreen(yStart), lineWidth));
-      ctx.lineTo(this.adjust(calcs.xToScreen(0), lineWidth),
-        this.adjust(calcs.yToScreen(yEnd), lineWidth));
-    }
-
-    ctx.stroke();
-  }
-
-  drawGrid({
-    axisDirection = "x",
-    isMajor = true,
-  } = {}) {
-    const { config } = this.graph;
-    const { ctx } = this;
-    const { calcs } = this;
-    const {
-      xRangeAdjusted,
-      yRangeAdjusted,
-      xRangeMinorAdjusted,
-      yRangeMinorAdjusted,
-      xAxis,
-      yAxis,
-      xStart,
-      xEnd,
-      yStart,
-      yEnd,
-    } = calcs;
-
-    const isXAxis = (axisDirection === "x");
-    const axis = isXAxis ? xAxis : yAxis;
-    const grid = isMajor ? axis.majorGrid : axis.minorGrid;
-    const { textHeight } = grid;
-
-    if (grid.show) {
-      let range = isMajor ? xRangeAdjusted : xRangeMinorAdjusted;
-      if (!isXAxis) {
-        range = isMajor ? yRangeAdjusted : yRangeMinorAdjusted;
-      }
-      const toScreen = isXAxis ? calcs.yToScreen : calcs.xToScreen;
-      const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
-
-      ctx.beginPath();
-      ctx.strokeStyle = grid.style;
-      ctx.lineWidth = grid.width;
-
-      const axisStart = isXAxis ? yStart : xStart;
-      const axisEnd = isXAxis ? yEnd : xEnd;
-
-      range.forEach((p) => {
-        const fixed = isXAxis ? calcs.xToScreen(p) : calcs.yToScreen(p);
-        const gridType = "grid";
-        const start = (grid.type === gridType) ? toScreen(axisStart)
-          : -1 * rulerLength;
-        const end = (grid.type === gridType) ? toScreen(axisEnd)
-          : rulerLength;
-        const xStartLine = isXAxis ? fixed : start;
-        const xEndLine = isXAxis ? fixed : end;
-        const yStartLine = isXAxis ? start : fixed;
-        const yEndLine = isXAxis ? end : fixed;
-        const { lineWidth } = ctx;
-        ctx.moveTo(this.adjust(xStartLine, lineWidth), this.adjust(yStartLine, lineWidth));
-        ctx.lineTo(this.adjust(xEndLine, lineWidth), this.adjust(yEndLine, lineWidth));
-      });
-      ctx.stroke();
-
-      // Draw horizontal labels
-      ctx.strokeStyle = config.backgroundStyle;
-      ctx.fillStyle = grid.labelStyle;
-
-      const dashWidth = ctx.measureText("-").width / 2.0;
-
-      // TODO: remove labels if they overlap
-      const mod = 1;
-      range.forEach((p, i) => {
-        if ((i % mod) !== 0) { return; }
-        if (grid.showLabels) {
-          if (isXAxis) {
-            const labelFormat = labelFormatter.format;
-            const pFormatted = labelFormat ? labelFormat(p) : p;
-            const textMetrics = ctx.measureText(pFormatted);
-            let xTextOffset = (textMetrics.width / 2.0);
-            if (p < 0) {
-              xTextOffset += dashWidth;
-            }
-
-            if (p === 0) {
-              xTextOffset += (textHeight / 2.0);
-            }
-
-            const yTextOffset = -1 * textHeight;
-            ctx.lineWidth = 4; // StrokeWidth
-            ctx.font = `${textHeight}px Arial`;
-
-            let currentX = calcs.xToScreen(p) - xTextOffset;
-            const currentY = calcs.yToScreen(0) - yTextOffset;
-
-            let isInScreenBounds = calcs.isInScreenBounds({ x: currentX, y: currentY })
-              && calcs.isInScreenBounds({ x: calcs.xToScreen(p) + xTextOffset, y: currentY });
-            if (i === 0 && !isInScreenBounds) {
-              currentX += xTextOffset + dashWidth;
-              isInScreenBounds = true;
-            }
-
-            if (i === range.length) {
-              currentX -= xTextOffset;
-              isInScreenBounds = true;
-            }
-
-            if (isInScreenBounds) {
-              ctx.strokeText(pFormatted, currentX, currentY);
-              ctx.fillText(pFormatted, currentX, currentY);
-            }
-          }
-        }
-      });
-    }
+    var axesProv = new AxesProvider({
+      ctx,
+      calcs
+    });
+    axesProv.draw();
   }
 }
