@@ -126,6 +126,8 @@ export default class GraphLayer extends Layer {
       distances,
     });
 
+console.log(this.calcs);
+
     this.graph.calcs = this.calcs;
   }
 

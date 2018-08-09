@@ -57,7 +57,7 @@ export default class GridLabelsProvider {
               xTextOffset += (textHeight / 2.0);
             }
 
-            const yTextOffset = -1 * textHeight;
+            const yTextOffset = -1 * textHeight * 1.25;
             ctx.lineWidth = 4; // StrokeWidth
             ctx.font = `${textHeight}px Arial`;
 

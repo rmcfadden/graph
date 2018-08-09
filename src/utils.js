@@ -18,7 +18,7 @@ export default class Utils {
   static range(start, end, step = 1) {
     const distance = Utils.distance(start, end);
     const rangeCount = Decimal(distance).dividedBy(step).ceil().toNumber();
-    return [...Array(rangeCount + 1).keys()].map(x => (x * step) + start);
+    return [...Array(rangeCount + 1).keys()].map(x => Decimal((Decimal(x).times(step)).toNumber() + start).toNumber());
   }
 
   static pOrO(o, p) {
@@ -27,7 +27,7 @@ export default class Utils {
 
   static alignRange(items, n) {
     if (n === 0) { throw new TypeError("n cannot be 0"); }
-    return items.map(x => Math.round(x / n) * n);
+    return items.map(x => Decimal(Math.round(Decimal(x).dividedBy(n).toNumber())).times(n).toNumber());
   }
 
   static isBetween(x, start, end) {
