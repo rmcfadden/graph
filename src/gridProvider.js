@@ -1,51 +1,8 @@
-<<<<<<< HEAD
-export default class GridProvider {
-  constructor(args) {
-    this.ctx = args.ctx;
-    this.calcs = args.calcs;
-  }
-
-  draw() {
-    const { ctx } = this;
-    const {
-      yAxis,
-      xStart,
-      xEnd,
-      yStart,
-      yEnd,
-    } = this.calcs;
-
-    ctx.beginPath();
-
-    if (yAxis.show) {
-      ctx.strokeStyle = yAxis.style;
-      ctx.lineWidth = yAxis.width;
-      const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(this.xToScreen(xStart), lineWidth),
-        this.adjust(this.yToScreen(0), lineWidth));
-      ctx.lineTo(this.adjust(this.xToScreen(xEnd), lineWidth),
-        this.adjust(this.yToScreen(0), lineWidth));
-    }
-
-    if (yAxis.show) {
-      ctx.strokeStyle = yAxis.style;
-      ctx.lineWidth = yAxis.width;
-      const { lineWidth } = ctx;
-      ctx.moveTo(this.adjust(this.xToScreen(0), lineWidth),
-        this.adjust(this.yToScreen(yStart), lineWidth));
-      ctx.lineTo(this.adjust(this.xToScreen(0), lineWidth),
-        this.adjust(this.yToScreen(yEnd), lineWidth));
-    }
-
-    ctx.stroke();
-  }
-}
-=======
 import Utils from "./utils";
 import labelFormatter from "./labelFormatter";
 
 
-export default class AxesProvider {
+export default class GridProvider {
   constructor(args) {
     this.ctx = args.ctx;
     this.calcs = args.calcs;
@@ -56,11 +13,10 @@ export default class AxesProvider {
     axisDirection = "x",
     isMajor = true,
   } = {}) {
-    const { 
+    const {
       ctx,
       calcs,
     } = this;
-    const { config } = this.graph;
     const {
       xRangeAdjusted,
       yRangeAdjusted,
@@ -112,58 +68,6 @@ export default class AxesProvider {
         ctx.lineTo(Utils.adjust(xEndLine, lineWidth), Utils.adjust(yEndLine, lineWidth));
       });
       ctx.stroke();
-
-      // Draw horizontal labels
-      ctx.strokeStyle = config.backgroundStyle;
-      ctx.fillStyle = grid.labelStyle;
-
-      const dashWidth = ctx.measureText("-").width / 2.0;
-
-      // TODO: remove labels if they overlap
-      const mod = 1;
-      range.forEach((p, i) => {
-        if ((i % mod) !== 0) { return; }
-        if (grid.showLabels) {
-          if (isXAxis) {
-            const labelFormat = labelFormatter.format;
-            const pFormatted = labelFormat ? labelFormat(p) : p;
-            const textMetrics = ctx.measureText(pFormatted);
-            let xTextOffset = (textMetrics.width / 2.0);
-            if (p < 0) {
-              xTextOffset += dashWidth;
-            }
-
-            if (p === 0) {
-              xTextOffset += (textHeight / 2.0);
-            }
-
-            const yTextOffset = -1 * textHeight;
-            ctx.lineWidth = 4; // StrokeWidth
-            ctx.font = `${textHeight}px Arial`;
-
-            let currentX = calcs.xToScreen(p) - xTextOffset;
-            const currentY = calcs.yToScreen(0) - yTextOffset;
-
-            let isInScreenBounds = calcs.isInScreenBounds({ x: currentX, y: currentY })
-              && calcs.isInScreenBounds({ x: calcs.xToScreen(p) + xTextOffset, y: currentY });
-            if (i === 0 && !isInScreenBounds) {
-              currentX += xTextOffset + dashWidth;
-              isInScreenBounds = true;
-            }
-
-            if (i === range.length) {
-              currentX -= xTextOffset;
-              isInScreenBounds = true;
-            }
-
-            if (isInScreenBounds) {
-              ctx.strokeText(pFormatted, currentX, currentY);
-              ctx.fillText(pFormatted, currentX, currentY);
-            }
-          }
-        }
-      });
     }
   }
 }
->>>>>>> 581fe32d779a0976a22e0292c17fc61b3eb33083

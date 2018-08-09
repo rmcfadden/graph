@@ -4,6 +4,7 @@ import Layer from "./layer";
 import GraphCalcs from "./graphCalcs";
 import AxesProvider from "./axesProvider";
 import GridProvider from "./gridProvider";
+import GridLabelsProvider from "./gridLabelsProvider";
 
 export default class GraphLayer extends Layer {
   constructor(view) {
@@ -50,7 +51,7 @@ export default class GraphLayer extends Layer {
     const xDistance = Utils.distance(xStart, xEnd);
     const yDistance = Utils.distance(yStart, yEnd);
     const { useAutoGrid, autoGrid } = config;
-    const distances = !this.calls || !calcs.distances 
+    const distances = !this.calls || !calcs.distances
       || (width !== calcs.width || height !== calcs.height)
       ? autoGrid.getDistances() : calcs.distances;
 
@@ -129,13 +130,12 @@ export default class GraphLayer extends Layer {
   }
 
   drawAxes() {
-    const { ctx } = this;
-    const { calcs } = this;
+    const { ctx, calcs, graph } = this;
 
-    var gridProv = new GridProvider({
+    const gridProv = new GridProvider({
       ctx,
       calcs,
-      graph: this.graph,
+      graph,
     });
 
     gridProv.draw({ isMajor: false });
@@ -143,10 +143,17 @@ export default class GraphLayer extends Layer {
     gridProv.draw();
     gridProv.draw({ axisDirection: "y" });
 
-    var axesProv = new AxesProvider({
+    const axesProv = new AxesProvider({
       ctx,
-      calcs
+      calcs,
     });
     axesProv.draw();
+
+    const labelsProv = new GridLabelsProvider({
+      ctx,
+      calcs,
+      graph,
+    });
+    labelsProv.draw();
   }
 }

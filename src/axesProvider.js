@@ -9,7 +9,6 @@ export default class AxesProvider {
   draw() {
     const { ctx, calcs } = this;
     const {
-      xAxis,
       yAxis,
       xStart,
       xEnd,
@@ -24,9 +23,9 @@ export default class AxesProvider {
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;
       ctx.moveTo(Utils.adjust(calcs.xToScreen(xStart), lineWidth),
-      Utils.adjust(calcs.yToScreen(0), lineWidth));
+        Utils.adjust(calcs.yToScreen(0), lineWidth));
       ctx.lineTo(Utils.adjust(calcs.xToScreen(xEnd), lineWidth),
-      Utils.adjust(calcs.yToScreen(0), lineWidth));
+        Utils.adjust(calcs.yToScreen(0), lineWidth));
     }
 
     if (yAxis.show) {
