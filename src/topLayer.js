@@ -6,24 +6,10 @@ import Layer from "./layer";
 export default class TopLayer extends Layer {
   constructor(view) {
     super(view);
-
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
-    this.elements = [];
-    this.drawSvgImage = (ctx, src, x, y, w, h, name) => {
-      const image = new Image();
-      image.onload = () => ctx.drawImage(image, x, y, w, h);
-      image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
-      this.elements.push({
-        left: x,
-        top: y,
-        width: w,
-        height: h,
-        element: image,
-        name,
-      });
-    };
+    this.elements = [];    
   }
 
   setCanvas(id) {
@@ -109,9 +95,9 @@ export default class TopLayer extends Layer {
     const m = 5;
     const left = this.canvas.width - (m + l);
     this.elements = [];
-    this.drawSvgImage(this.ctx, ZoomInSvg, left, m, l, l, "zoomin");
-    this.drawSvgImage(this.ctx, ZoomOutSvg, left, l + m, l, l, "zoomout");
-    this.drawSvgImage(this.ctx, SettingsSvg, left, (l * 2) + m, l, l, "settings");
+    this.drawSvgImage(ZoomInSvg, left, m, l, l, "zoomin");
+    this.drawSvgImage(ZoomOutSvg, left, l + m, l, l, "zoomout");
+    this.drawSvgImage(SettingsSvg, left, (l * 2) + m, l, l, "settings");
   }
 
   ZoomIn() {
