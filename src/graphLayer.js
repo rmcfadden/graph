@@ -125,9 +125,7 @@ export default class GraphLayer extends Layer {
       yMinorStep,
       distances,
     });
-
-console.log(this.calcs);
-
+    console.log(this.calcs);
     this.graph.calcs = this.calcs;
   }
 

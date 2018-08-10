@@ -9,9 +9,9 @@ export default class AutoStepConfig {
       const count = 50;
       const bigItems = [...new Array(count - 1)].reduce((p, _, i) => {
         const distance = {
-          max: (((i - 1) % 3) === 0) ? p[i].max.times(2.5) 
+          max: (((i - 1) % 3) === 0) ? p[i].max.times(2.5)
             : p[i].max.times(2),
-          majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep.times(2.5)  
+          majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep.times(2.5)
             : p[i].majorStep.times(2),
         };
         p.push({ ...distance, ...{ minorStep: distance.majorStep.dividedBy(5) } });
@@ -20,26 +20,26 @@ export default class AutoStepConfig {
 
       const smallItems = [...new Array(count - 1)].reduce((p, _, i) => {
         const distance = {
-          max: (((i - 1) % 3) === 0) ? p[i].max.dividedBy(2.5) 
+          max: (((i - 1) % 3) === 0) ? p[i].max.dividedBy(2.5)
             : p[i].max.dividedBy(2),
-          majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep.dividedBy(2.5)  
+          majorStep: (((i - 1) % 3) === 0) ? p[i].majorStep.dividedBy(2.5)
             : p[i].majorStep.dividedBy(2),
         };
         p.push({ ...distance, ...{ minorStep: distance.majorStep.dividedBy(5) } });
-        return p;;
+        return p;
       }, [{ max, majorStep, minorStep }]);
 
-      const reversedSmallItems = smallItems.map(x => { return {
+      const reversedSmallItems = smallItems.map(x => ({
         max: x.max.toFixed(),
         majorStep: x.majorStep.toFixed(),
         minorStep: x.minorStep.toFixed(),
-      }}).reverse(x => x.max);
+      })).reverse(x => x.max);
 
-      const adjustedBigItems = bigItems.map(x => { return {
+      const adjustedBigItems = bigItems.map(x => ({
         max: x.max.toFixed(),
         majorStep: x.majorStep.toFixed(),
         minorStep: x.minorStep.toFixed(),
-      }});
+      }));
 
       return [...reversedSmallItems, ...adjustedBigItems];
     };

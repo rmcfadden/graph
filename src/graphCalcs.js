@@ -30,18 +30,18 @@ export default class GraphCalcs {
     this.yMajorStep = args.yMajorStep;
     this.xMinorStep = args.xMinorStep;
     this.yMinorStep = args.yMinorStep;
-    this.distances = args.distances;  
+    this.distances = args.distances;
     this.xToScreen = x => this.xScreenScale * (x + this.xOffset);
     this.yToScreen = y => this.yScreenScale * (this.yOffset - y);
     this.screenToX = x => (x / this.xScreenScale) - this.xOffset;
     this.screenToY = y => this.yOffset - (y / this.yScreenScale);
-  
+
     this.isInBounds = (p) => {
       const { xAxis, yAxis } = this;
       return Utils.isBetween(p.x, xAxis.start, xAxis.end)
         && Utils.isBetween(p.y, yAxis.start, yAxis.end);
     };
-  
+
     this.isInScreenBounds = (p) => {
       const {
         xStart,

@@ -33,9 +33,9 @@ export default class AxesProvider {
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;
       ctx.moveTo(Utils.adjust(calcs.xToScreen(0), lineWidth),
-      Utils.adjust(calcs.yToScreen(yStart), lineWidth));
+        Utils.adjust(calcs.yToScreen(yStart), lineWidth));
       ctx.lineTo(Utils.adjust(calcs.xToScreen(0), lineWidth),
-      Utils.adjust(calcs.yToScreen(yEnd), lineWidth));
+        Utils.adjust(calcs.yToScreen(yEnd), lineWidth));
     }
     ctx.stroke();
   }

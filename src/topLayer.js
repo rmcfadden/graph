@@ -105,7 +105,6 @@ export default class TopLayer extends Layer {
   }
 
   draw() {
-    //this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const l = 35;
     const m = 5;
     const left = this.canvas.width - (m + l);
@@ -160,8 +159,8 @@ export default class TopLayer extends Layer {
 
   Zoom(args) {
     const { transform } = this.graph.config;
-    //transform.xOffset = xMid;
-    //transform.yOffset = yMid;
+    // transform.xOffset = xMid;
+    // transform.yOffset = yMid;
 
     transform.xScale = args.xScale;
     transform.yScale = args.yScale;

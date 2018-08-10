@@ -1,6 +1,4 @@
 import Utils from "./utils";
-import labelFormatter from "./labelFormatter";
-
 
 export default class GridProvider {
   constructor(args) {
