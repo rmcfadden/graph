@@ -1,7 +1,6 @@
 import Calcs from "./calcs";
 import Utils from "./utils";
 
-
 export default class Layer {
   constructor(view) {
     this.view = view;
@@ -28,8 +27,6 @@ export default class Layer {
       return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd))
         && Utils.isBetween(p.y, this.yToScreen(yEnd), this.yToScreen(yStart));
     };
-
-
   }
 
   setCanvas(id) {
@@ -55,17 +52,17 @@ export default class Layer {
   drawLine(args) {
   }
 
-  drawLine(x, y, width, height, useScreenCords) {
+  drawLine(x1, y1, x2, y2, useScreenCords) {
     this.ctx.beginPath();
-    this.ctx.moveTo(0,0);
-    this.ctx.lineTo(300,150);
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
   }
 
-  drawRect(args) {
+  drawRect(x, y, width, height, useScreenCords) {
     this.ctx.beginPath();
-    this.ctx.moveTo(0,0);
-    this.ctx.lineTo(300,150);
+    this.ctx.moveTo(x, y);
+    this.ctx.lineTo(width, height);
     this.ctx.stroke();  
   }
 
