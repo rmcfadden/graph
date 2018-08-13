@@ -1,4 +1,3 @@
-import Utils from "./utils";
 import Calcs from "./calcs"
 
 export default class GraphCalcs extends Calcs {
@@ -21,22 +20,5 @@ export default class GraphCalcs extends Calcs {
     this.xMinorStep = args.xMinorStep;
     this.yMinorStep = args.yMinorStep;
     this.distances = args.distances;
-
-    this.isInBounds = (p) => {
-      const { xAxis, yAxis } = this;
-      return Utils.isBetween(p.x, xAxis.start, xAxis.end)
-        && Utils.isBetween(p.y, yAxis.start, yAxis.end);
-    };
-
-    this.isInScreenBounds = (p) => {
-      const {
-        xStart,
-        xEnd,
-        yStart,
-        yEnd,
-      } = this;
-      return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd))
-        && Utils.isBetween(p.y, this.yToScreen(yEnd), this.yToScreen(yStart));
-    };
   }
 }

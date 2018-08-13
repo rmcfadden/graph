@@ -5,6 +5,7 @@ export default class GridProvider {
     this.ctx = args.ctx;
     this.calcs = args.calcs;
     this.graph = args.graph;
+    this.layer = args.layer;
   }
 
   draw({
@@ -14,6 +15,7 @@ export default class GridProvider {
     const {
       ctx,
       calcs,
+      layer,
     } = this;
     const {
       xRangeAdjusted,
@@ -40,7 +42,7 @@ export default class GridProvider {
       if (!isXAxis) {
         range = isMajor ? yRangeAdjusted : yRangeMinorAdjusted;
       }
-      const toScreen = isXAxis ? calcs.yToScreen : calcs.xToScreen;
+      const toScreen = isXAxis ? layer.yToScreen : layer.xToScreen;
       const rulerLength = textHeight / ((isMajor) ? 2.0 : 4.0);
 
       ctx.beginPath();
@@ -51,7 +53,7 @@ export default class GridProvider {
       const axisEnd = isXAxis ? yEnd : xEnd;
 
       range.forEach((p) => {
-        const fixed = isXAxis ? calcs.xToScreen(p) : calcs.yToScreen(p);
+        const fixed = isXAxis ? layer.xToScreen(p) : layer.yToScreen(p);
         const gridType = "grid";
         const start = (grid.type === gridType) ? toScreen(axisStart)
           : -1 * rulerLength;

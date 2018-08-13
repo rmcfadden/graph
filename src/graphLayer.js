@@ -136,6 +136,7 @@ export default class GraphLayer extends Layer {
       ctx,
       calcs,
       graph,
+      layer: this,
     });
 
     gridProv.draw({ isMajor: false });
@@ -146,6 +147,7 @@ export default class GraphLayer extends Layer {
     const axesProv = new AxesProvider({
       ctx,
       calcs,
+      layer: this,
     });
     axesProv.draw();
 
@@ -153,6 +155,7 @@ export default class GraphLayer extends Layer {
       ctx,
       calcs,
       graph,
+      layer: this,
     });
     labelsProv.draw();
   }

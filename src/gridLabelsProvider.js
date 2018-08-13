@@ -5,6 +5,7 @@ export default class GridLabelsProvider {
     this.ctx = args.ctx;
     this.calcs = args.calcs;
     this.graph = args.graph;
+    this.layer = args.layer;
   }
 
   draw({
@@ -14,6 +15,7 @@ export default class GridLabelsProvider {
     const {
       ctx,
       calcs,
+      layer
     } = this;
     const { config } = this.graph;
     const {
@@ -61,11 +63,13 @@ export default class GridLabelsProvider {
             ctx.lineWidth = 4; // StrokeWidth
             ctx.font = `${textHeight}px Arial`;
 
-            let currentX = calcs.xToScreen(p) - xTextOffset;
-            const currentY = calcs.yToScreen(0) - yTextOffset;
+            let currentX = layer.xToScreen(p) - xTextOffset;
+            const currentY = layer.yToScreen(0) - yTextOffset;
 
-            let isInScreenBounds = calcs.isInScreenBounds({ x: currentX, y: currentY })
-              && calcs.isInScreenBounds({ x: calcs.xToScreen(p) + xTextOffset, y: currentY });
+            let isInScreenBounds = layer.isInScreenBounds({ x: currentX, y: currentY })
+              && layer.isInScreenBounds({ x: layer.xToScreen(p) + xTextOffset, y: currentY });
+              isInScreenBounds = true; // TODO: fix!!!!!!!!!!!!
+
             if (i === 0 && !isInScreenBounds) {
               currentX += xTextOffset + dashWidth;
               isInScreenBounds = true;
