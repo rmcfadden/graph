@@ -9,7 +9,7 @@ export default class Layer {
     this.ctx = this.canvas.getContext("2d");
   }
 
-  drawSvgImage(src, x, y, w, h, name) {
+  drawImage(src, x, y, w, h, name) {
     const image = new Image();
     image.onload = () => this.ctx.drawImage(image, x, y, w, h);
     image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
@@ -23,7 +23,26 @@ export default class Layer {
     });
   }
 
-  drawLine() {
+  // TODO:
+  drawLine(args) {
+  
+  }
+
+  drawLine(x, y, width, height, useScreenCords) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(0,0);
+    this.ctx.lineTo(300,150);
+    this.ctx.stroke();
+  }
+
+  drawRect(args) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(0,0);
+    this.ctx.lineTo(300,150);
+    this.ctx.stroke();  
+  }
+
+  fillRect(args) {
     this.ctx.beginPath();
     this.ctx.moveTo(0,0);
     this.ctx.lineTo(300,150);

@@ -67,7 +67,6 @@ export default class TopLayer extends Layer {
 
       transform.xOffset = xOffset;
       transform.yOffset = yOffset;
-
       this.view.draw();
     };
 
@@ -80,14 +79,9 @@ export default class TopLayer extends Layer {
       }
     };
 
-    this.canvas.ontouchstart = () => {
-    };
-
-    this.canvas.ontouchmove = () => {
-    };
-
-    this.canvas.ontouchend = () => {
-    };
+    this.canvas.ontouchstart = () => {};
+    this.canvas.ontouchmove = () => {};
+    this.canvas.ontouchend = () => {};
   }
 
   draw() {
@@ -95,9 +89,9 @@ export default class TopLayer extends Layer {
     const m = 5;
     const left = this.canvas.width - (m + l);
     this.elements = [];
-    this.drawSvgImage(ZoomInSvg, left, m, l, l, "zoomin");
-    this.drawSvgImage(ZoomOutSvg, left, l + m, l, l, "zoomout");
-    this.drawSvgImage(SettingsSvg, left, (l * 2) + m, l, l, "settings");
+    this.drawImage(ZoomInSvg, left, m, l, l, "zoomin");
+    this.drawImage(ZoomOutSvg, left, l + m, l, l, "zoomout");
+    this.drawImage(SettingsSvg, left, (l * 2) + m, l, l, "settings");
   }
 
   ZoomIn() {
