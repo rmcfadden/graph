@@ -54,6 +54,8 @@ export default class Layer {
     // TETING
     this.drawLine(1, 1, 25, 25); // TESTING
     this.drawRect(-2, -2, 1, 1); // TESTING
+    this.drawRect(0, 0, 0.333, 0.333); // TESTING
+
   }
 
 
