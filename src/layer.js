@@ -2,9 +2,9 @@ import Calcs from "./calcs";
 import Utils from "./utils";
 
 export default class Layer {
-  constructor(view) {
-    this.view = view;
-    this.graph = view.graph;
+  constructor(args) {
+    this.view = args.view;
+    this.graph = this.view.graph;
     this.calcs = new Calcs();
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
@@ -48,22 +48,35 @@ export default class Layer {
     });
   }
 
-  // TODO:
-  drawLine(args) {
+  draw() {
+    this.drawLine(1, 1, 2, 2); // TESTING
   }
 
-  drawLine(x1, y1, x2, y2, useScreenCords) {
+
+  // TODO:
+
+  drawLine(x1, y1, x2, y2, useScreenCords = true) {
+    // TESTING
     this.ctx.beginPath();
-    this.ctx.moveTo(x1, y1);
-    this.ctx.lineTo(x2, y2);
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = "red";
+
+    const adjustedX1 = this.xToScreen(x1);
+    const adjustedY1 = this.yToScreen(y1);
+
+    const adjustedX2 = this.xToScreen(x2);
+    const adjustedY2 = this.yToScreen(y2);
+
+    this.ctx.moveTo(adjustedX1, adjustedY1);
+    this.ctx.lineTo(adjustedX2, adjustedY2);
     this.ctx.stroke();
   }
 
-  drawRect(x, y, width, height, useScreenCords) {
+  drawRect(x, y, width, height, useScreenCords = true) {
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(width, height);
-    this.ctx.stroke();  
+    this.ctx.stroke();
   }
 
   fillRect(args) {

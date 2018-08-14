@@ -9,7 +9,7 @@ export default class TopLayer extends Layer {
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
-    this.elements = [];    
+    this.elements = [];
   }
 
   setCanvas(id) {
@@ -58,7 +58,7 @@ export default class TopLayer extends Layer {
         yDistance,
         width,
         height,
-      } = this.graph.calcs;
+      } = this.calcs;
 
       const changeX = diffX / width;
       const changeY = diffY / height;

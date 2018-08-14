@@ -15,7 +15,7 @@ export default class GridLabelsProvider {
     const {
       ctx,
       calcs,
-      layer
+      layer,
     } = this;
     const { config } = this.graph;
     const {
@@ -42,9 +42,7 @@ export default class GridLabelsProvider {
       const dashWidth = ctx.measureText("-").width / 2.0;
 
       // TODO: remove labels if they overlap
-      const mod = 1;
       range.forEach((p, i) => {
-        if ((i % mod) !== 0) { return; }
         if (grid.showLabels) {
           if (isXAxis) {
             const labelFormat = labelFormatter.format;
@@ -68,7 +66,7 @@ export default class GridLabelsProvider {
 
             let isInScreenBounds = layer.isInScreenBounds({ x: currentX, y: currentY })
               && layer.isInScreenBounds({ x: layer.xToScreen(p) + xTextOffset, y: currentY });
-              isInScreenBounds = true; // TODO: fix!!!!!!!!!!!!
+            isInScreenBounds = true; // TODO: fix!!!!!!!!!!!!
 
             if (i === 0 && !isInScreenBounds) {
               currentX += xTextOffset + dashWidth;
