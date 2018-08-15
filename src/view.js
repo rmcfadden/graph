@@ -1,4 +1,5 @@
 import GraphLayer from "./graphLayer";
+import BackgroundLayer from "./backgroundLayer";
 import TopLayer from "./topLayer";
 import Layer from "./layer";
 import Utils from "./utils";
@@ -12,6 +13,10 @@ export default class View {
     this.calcs = null;
     this.width = null;
     this.height = null;
+    this.selectedLayer = null;
+
+    const backgroundLayer = new BackgroundLayer({ view: this, name: "background" });
+    this.addLayer(backgroundLayer);
 
     const graphLayer = new GraphLayer({ view: this, name: "graph" });
     this.addLayer(graphLayer);
@@ -22,14 +27,25 @@ export default class View {
     const topLayer = new TopLayer({ view: this, name: "top" });
     this.addLayer(topLayer);
 
+    this.setSelectedLayer("content");
+
     window.onresize = () => {
       this.adjustLayout();
       this.draw();
     };
     window.onorientationchange = window.onresize;
 
-    this.adjustLayout();
     this.draw();
+  }
+
+  getSelectedLayer() {
+    return this.selectedLayer;
+  }
+
+  setSelectedLayer(name) {
+    const layer = this.layers.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (!layer) { throw Error(`Cannot find layer ${name}`); }
+    this.selectedLayer = layer;
   }
 
   addLayer(layer) {
@@ -64,6 +80,7 @@ export default class View {
   }
 
   draw() {
+    this.adjustLayout();
     this.preCalculations();
     const { calcs } = this;
     Object.keys(this.layers).forEach((x) => { this.layers[x].calcs = calcs; });

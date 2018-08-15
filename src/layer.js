@@ -3,6 +3,7 @@ import Utils from "./utils";
 
 export default class Layer {
   constructor(args) {
+    this.name = args.name;
     this.view = args.view;
     this.graph = this.view.graph;
     this.calcs = new Calcs();
@@ -36,6 +37,19 @@ export default class Layer {
     this.ctx = this.canvas.getContext("2d");
   }
 
+  get lineWidth() { return this.ctx.lineWidth; }
+
+  set lineWidth(lineWidth) { this.ctx.lineWidth = lineWidth; }
+
+  get strokeStyle() { return this.ctx.strokeStyle; }
+
+  set strokeStyle(strokeStyle) { this.ctx.strokeStyle = strokeStyle; }
+
+  get fillStyle() { return this.ctx.fillStyle; }
+
+  set fillStyle(fillStyle) { this.ctx.fillStyle = fillStyle; }
+
+
   drawImage(src, x, y, w, h, name) {
     const image = new Image();
     image.onload = () => this.ctx.drawImage(image, x, y, w, h);
@@ -51,13 +65,16 @@ export default class Layer {
   }
 
   draw() {
-    // TETING
+ 
+    this.fillStyle = "green";
+    this.strokeStyle = "purple";
+    this.lineWidth = 2;
+
     this.drawLine(1, 1, 25, 25); // TESTING
     this.drawRect(-2, -2, 1, 1); // TESTING
-    this.drawRect(0, 0, 0.333, 0.333); // TESTING
-
+    this.drawRect(0, 0, 2, 2); // TESTING
+    this.fillRect(0, 0, 2, 2); // TESTING
   }
-
 
   drawLine(x1, y1, x2, y2, useScreenCords = true) {
     const adjustedX1 = useScreenCords ? this.xToScreen(x1) : x1;
@@ -66,32 +83,43 @@ export default class Layer {
     const adjustedY2 = useScreenCords ? this.yToScreen(y2) : y2;
 
     this.ctx.beginPath();
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeStyle = "red";
-
     this.ctx.moveTo(adjustedX1, adjustedY1);
     this.ctx.lineTo(adjustedX2, adjustedY2);
     this.ctx.stroke();
   }
 
   drawRect(x, y, width, height, useScreenCords = true) {
-    const adjustedX = useScreenCords ? this.xToScreen(x) : x;
-    const adjustedY = useScreenCords ? this.yToScreen(y) : y;
-    const adjustedWidth = useScreenCords ? this.xScaleToScreen(width) : width;
-    const adjustedHeight = useScreenCords ? this.yScaleToScreen(height) : height;
+    const {
+      adjustedX,
+      adjustedY,
+      adjustedWidth,
+      adjustedHeight,
+    } = this.getAdjustedPointDimension(x, y, width, height, useScreenCords);
 
     this.ctx.beginPath();
-    this.ctx.lineWidth = 3;
-    this.ctx.strokeStyle = "green";
-    this.ctx.fillStyle = "green";
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
     this.ctx.stroke();
   }
 
-  fillRect(args) {
+  fillRect(x, y, width, height, useScreenCords = true) {
+    const {
+      adjustedX,
+      adjustedY,
+      adjustedWidth,
+      adjustedHeight,
+    } = this.getAdjustedPointDimension(x, y, width, height, useScreenCords);
+
     this.ctx.beginPath();
-    this.ctx.moveTo(0, 0);
-    this.ctx.lineTo(300, 150);
-    this.ctx.stroke();
+    this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+    this.ctx.fill();
+  }
+
+  getAdjustedPointDimension(x, y, width, height, useScreenCords) {
+    return {
+      adjustedX: useScreenCords ? this.xToScreen(x) : x,
+      adjustedY: useScreenCords ? this.yToScreen(y) : y,
+      adjustedWidth: useScreenCords ? this.xScaleToScreen(width) : width,
+      adjustedHeight: useScreenCords ? this.yScaleToScreen(height) : height,
+    };
   }
 }

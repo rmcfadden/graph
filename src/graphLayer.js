@@ -11,19 +11,7 @@ export default class GraphLayer extends Layer {
   }
 
   draw() {
-    this.drawBackground();
     this.drawAxes();
-  }
-
-  drawBackground() {
-    const { backgroundStyle, borderStyle, borderWidth } = this.graph.config;
-    const { width, height } = this.canvas;
-    const { ctx } = this;
-    ctx.fillStyle = backgroundStyle;
-    ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = borderStyle;
-    ctx.lineWidth = borderWidth;
-    ctx.strokeRect(0, 0, width, height);
   }
 
   drawAxes() {

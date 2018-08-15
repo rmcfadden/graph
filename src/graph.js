@@ -10,7 +10,15 @@ export default class Graph {
     this.view = new View(this);
     this.draw();
   }
+/*
+  getSelectedLayer() {
+    return this.view.getSelectedLayer();
+  }
 
+  setSelectedLayer(name) {
+    this.view.setSelectedLayer(name);
+  }
+*/
   draw() {
     this.view.draw();
   }
