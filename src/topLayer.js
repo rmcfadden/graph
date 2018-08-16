@@ -111,7 +111,7 @@ export default class TopLayer extends Layer {
       startYScale: transform.yScale,
       endXScale,
       endYScale,
-      duration: 250,
+      duration: 150,
     });
   }
 

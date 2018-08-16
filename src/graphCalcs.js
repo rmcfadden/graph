@@ -1,4 +1,4 @@
-import Calcs from "./calcs"
+import Calcs from "./calcs";
 
 export default class GraphCalcs extends Calcs {
   constructor(args) {

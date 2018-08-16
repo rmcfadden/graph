@@ -5,7 +5,6 @@ import Layer from "./layer";
 import Utils from "./utils";
 import GraphCalcs from "./graphCalcs";
 
-
 export default class View {
   constructor(graph) {
     this.graph = graph;

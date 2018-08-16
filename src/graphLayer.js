@@ -1,8 +1,7 @@
-import _ from "lodash";
 import Layer from "./layer";
-import AxesProvider from "./axesProvider";
-import GridProvider from "./gridProvider";
-import GridLabelsProvider from "./gridLabelsProvider";
+import AxesProvider from "./providers/axesProvider";
+import GridProvider from "./providers/gridProvider";
+import GridLabelsProvider from "./providers/gridLabelsProvider";
 
 export default class GraphLayer extends Layer {
   constructor(args) {

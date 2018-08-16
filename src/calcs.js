@@ -1,8 +1,6 @@
-import Utils from "./utils";
-
 export default class Calcs {
   constructor(args) {
-    if(args) {
+    if (args) {
       this.width = args.width;
       this.height = args.height;
       this.xOffset = args.xOffset;

@@ -1,4 +1,4 @@
-import labelFormatter from "./labelFormatter";
+import labelFormatter from "../formatters/labelFormatter";
 
 export default class GridLabelsProvider {
   constructor(args) {

@@ -10,7 +10,7 @@ export default class Graph {
     this.view = new View(this);
     this.draw();
   }
-/*
+
   getSelectedLayer() {
     return this.view.getSelectedLayer();
   }
@@ -18,7 +18,7 @@ export default class Graph {
   setSelectedLayer(name) {
     this.view.setSelectedLayer(name);
   }
-*/
+
   draw() {
     this.view.draw();
   }
