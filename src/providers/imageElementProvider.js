@@ -1,5 +1,3 @@
-import Utils from "./utils";
-
 export default class GridElementProvider {
   constructor(args) {
     this.ctx = args.ctx;
@@ -9,5 +7,5 @@ export default class GridElementProvider {
   }
 
   draw() {
-    
   }
+}

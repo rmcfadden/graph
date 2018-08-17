@@ -27,6 +27,9 @@
         "semi": [
             "error",
             "always"
+        ],
+        "object-curly-newline": [
+            "off"
         ]
     }
 }

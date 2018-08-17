@@ -1,3 +1,4 @@
+import lo from "lodash";
 import GraphLayer from "./graphLayer";
 import BackgroundLayer from "./backgroundLayer";
 import TopLayer from "./topLayer";
@@ -28,13 +29,10 @@ export default class View {
 
     this.setSelectedLayer("content");
 
-    window.onresize = () => {
-      this.adjustLayout();
+    window.onresize = () => {      
       this.draw();
     };
     window.onorientationchange = window.onresize;
-
-    this.draw();
   }
 
   getSelectedLayer() {
@@ -52,6 +50,7 @@ export default class View {
     newLayer.index = this.layers.length;
     this.layers.push(newLayer);
     this.applyLayers();
+    newLayer.load();
   }
 
   applyLayers() {
@@ -60,29 +59,34 @@ export default class View {
 
     const canvasHtml = this.layers
       .reduce((acc, curr) => `${acc}<canvas id='canvas-${this.graph.id}-${curr.name}'`
-        + ` style='position: absolute; left: 0; top: 0; z-index: ${curr.index + 1};'></canvas>`,
+        + ` style='position: absolute; left: 0; top: 0; z-index: ${curr.index};'></canvas>`,
       "");
 
     graphElement.innerHTML = canvasHtml;
     this.layers.forEach(x => x.setCanvas(`canvas-${this.graph.id}-${x.name}`));
+    this.layers.forEach(x => this.setLayerDimentions(x));
   }
 
-  adjustLayout() {
+  setLayerDimentions(layer) {
+    const { canvas } = layer;
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    canvas.width = this.width;
+    canvas.height = this.height;
+  }
+
+  layout() {
+    this.calcs = this.preCalculations();
     Object.keys(this.layers).forEach((x) => {
       const layer = this.layers[x];
-      const { canvas } = layer;
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      canvas.width = this.width;
-      canvas.height = this.height;
+      this.setLayerDimentions(layer);
+      this.layers[x].calcs = this.calcs;
+      this.layers[x].layout();
     });
   }
 
   draw() {
-    this.adjustLayout();
-    this.preCalculations();
-    const { calcs } = this;
-    Object.keys(this.layers).forEach((x) => { this.layers[x].calcs = calcs; });
+    this.layout();
     Object.keys(this.layers).forEach(x => this.layers[x].draw());
   }
 
@@ -145,12 +149,12 @@ export default class View {
     const xRangeAdjusted = Utils.alignRange(xRange, xMajorStep);
     const yRangeAdjusted = Utils.alignRange(yRange, yMajorStep);
 
-    const xRangeMinor = _.range(xStart, xEnd, xMinorStep);
-    const yRangeMinor = _.range(yStart, yEnd, yMinorStep);
+    const xRangeMinor = lo.range(xStart, xEnd, xMinorStep);
+    const yRangeMinor = lo.range(yStart, yEnd, yMinorStep);
     const xRangeMinorAdjusted = Utils.alignRange(xRangeMinor, xAxis.minorGrid.step);
     const yRangeMinorAdjusted = Utils.alignRange(yRangeMinor, yAxis.minorGrid.step);
 
-    this.calcs = new GraphCalcs({
+    return new GraphCalcs({
       width,
       height,
       xAxis,
@@ -181,6 +185,6 @@ export default class View {
       yMinorStep,
       distances,
     });
-    console.log(this.calcs);
+    
   }
 }

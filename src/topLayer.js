@@ -9,11 +9,38 @@ export default class TopLayer extends Layer {
     this.isMouseDown = false;
     this.startCoords = { x: 0, y: 0 };
     this.lastCoords = { x: 0, y: 0 };
-    this.elements = [];
+  }
+
+  load() {
+    const l = 35;
+    const m = 5;
+    const left = this.canvas.width - (m + l);
+    this.addImage({ name: "zoomin", src: ZoomInSvg, x: left, y: m, width: l, height: l });
+    this.addImage({ name: "zoomout", src: ZoomOutSvg, x: left, y: l + m, width: l, height: l });
+    this.addImage({ name: "settings", src: SettingsSvg, x: left, y: (l * 2) + m, width: l, height: l });
+  }
+
+  layout() {
+    const l = 35;
+    const m = 5;
+    const left = this.canvas.width - (m + l);
+
+    const zoomInElement = this.elements.find(x => x.name === "zoomin")
+    zoomInElement.x = left
+    zoomInElement.y = m;
+
+    const zoomOutElement = this.elements.find(x => x.name === "zoomout")
+    zoomOutElement.x = left
+    zoomOutElement.y = l + m;
+
+    const settingsElement = this.elements.find(x => x.name === "settings")
+    settingsElement.x = left
+    settingsElement.y = (l * 2) + m;    
   }
 
   setCanvas(id) {
     super.setCanvas(id);
+
     this.canvas.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
@@ -34,8 +61,8 @@ export default class TopLayer extends Layer {
       const x = e.pageX - this.canvas.offsetLeft;
       const y = e.pageY - this.canvas.offsetTop;
       this.elements.forEach((element) => {
-        if (x >= element.left && y >= element.top
-          && x <= element.left + element.width && y <= element.top + element.height) {
+        if (x >= element.x && y >= element.y
+          && x <= element.x + element.width && y <= element.y + element.height) {
           switch (element.name) {
           case "zoomin": { this.ZoomIn(); break; }
           case "zoomout": { this.ZoomOut(); break; }
@@ -82,16 +109,6 @@ export default class TopLayer extends Layer {
     this.canvas.ontouchstart = () => {};
     this.canvas.ontouchmove = () => {};
     this.canvas.ontouchend = () => {};
-  }
-
-  draw() {
-    const l = 35;
-    const m = 5;
-    const left = this.canvas.width - (m + l);
-    this.elements = [];
-    this.drawImage(ZoomInSvg, left, m, l, l, "zoomin");
-    this.drawImage(ZoomOutSvg, left, l + m, l, l, "zoomout");
-    this.drawImage(SettingsSvg, left, (l * 2) + m, l, l, "settings");
   }
 
   ZoomIn() {

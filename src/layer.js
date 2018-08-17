@@ -50,20 +50,12 @@ export default class Layer {
 
   set fillStyle(fillStyle) { this.ctx.fillStyle = fillStyle; }
 
-
-  drawImage(src, x, y, w, h, name) {
-    const image = new Image();
-    image.onload = () => this.ctx.drawImage(image, x, y, w, h);
-    image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
-    this.elements.push({
-      left: x,
-      top: y,
-      width: w,
-      height: h,
-      element: image,
-      name,
-    });
+  layout() {
   }
+
+  load() {
+  }
+
 
   draw() {
     this.elements.forEach((element) => {
@@ -72,6 +64,9 @@ export default class Layer {
       }
       if (element.type === "rect") {
         this.drawRect(element);
+      }
+      if (element.type === "image") {
+        this.drawImage(element);
       }
     });
   }
@@ -89,23 +84,6 @@ export default class Layer {
     this.strokeStyle = strokeStyle || this.strokeStyle;
     this.ctx.moveTo(adjustedX1, adjustedY1);
     this.ctx.lineTo(adjustedX2, adjustedY2);
-    this.ctx.stroke();
-  }
-
-  drawRect({
-    x, y, width, height, lineWidth, strokeStyle, useScreenCords = true,
-  } = {}) {
-    const {
-      adjustedX,
-      adjustedY,
-      adjustedWidth,
-      adjustedHeight,
-    } = this.getAdjustedPointDimension(x, y, width, height, useScreenCords);
-
-    this.ctx.beginPath();
-    this.lineWidth = lineWidth || this.lineWidth;
-    this.strokeStyle = strokeStyle || this.strokeStyle;
-    this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
     this.ctx.stroke();
   }
 
@@ -132,8 +110,18 @@ export default class Layer {
     this.elements.push(rectElement);
   }
 
-
-  fillRect(x, y, width, height, useScreenCords = true) {
+  drawRect({
+    x,
+    y,
+    width,
+    height,
+    lineWidth,
+    strokeStyle,
+    fillStyle,
+    stroke = true,
+    fill = false,
+    useScreenCords = true,
+  } = {}) {
     const {
       adjustedX,
       adjustedY,
@@ -142,8 +130,37 @@ export default class Layer {
     } = this.getAdjustedPointDimension(x, y, width, height, useScreenCords);
 
     this.ctx.beginPath();
+    this.lineWidth = lineWidth || this.lineWidth;
+    this.strokeStyle = strokeStyle || this.strokeStyle;
+    this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
-    this.ctx.fill();
+    if (stroke) {
+      this.ctx.stroke();
+    }
+    if (fill) {
+      this.ctx.fill();
+    }
+  }
+
+  addImage(args) {
+    const imageElement = {
+      type: "image",
+      ...args,
+    };
+    this.elements.push(imageElement);
+  }
+
+  drawImage({
+    src,
+    x,
+    y,
+    width,
+    height,
+    name,
+  } = {}) {
+    const image = new Image();
+    image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
+    image.onload = () => this.ctx.drawImage(image, x, y, width, height);    
   }
 
   getAdjustedPointDimension(x, y, width, height, useScreenCords) {
