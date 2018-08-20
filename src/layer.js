@@ -88,18 +88,18 @@ export default class Layer {
   }
 
   addLine(args) {
-    const lineElement = {
+    const element = {
       type: "line",
       strokeStyle: args.strokeStyle || this.strokeStyle,
       lineWidth: args.lineWidth || this.lineWidth,
       useScreenCords: args.useScreenCords !== undefined || true,
       ...args,
     };
-    this.elements.push(lineElement);
+    this.elements.push(element);
   }
 
   addRect(args) {
-    const rectElement = {
+    const element = {
       type: "rect",
       strokeStyle: args.strokeStyle || this.strokeStyle,
       fillStyle: args.fillStyle || this.fillStyle,
@@ -107,7 +107,7 @@ export default class Layer {
       useScreenCords: args.useScreenCords !== undefined || true,
       ...args,
     };
-    this.elements.push(rectElement);
+    this.elements.push(element);
   }
 
   drawRect({
@@ -143,11 +143,11 @@ export default class Layer {
   }
 
   addImage(args) {
-    const imageElement = {
+    const element = {
       type: "image",
       ...args,
     };
-    this.elements.push(imageElement);
+    this.elements.push(element);
   }
 
   drawImage({
@@ -169,6 +169,13 @@ export default class Layer {
       adjustedY: useScreenCords ? this.yToScreen(y) : y,
       adjustedWidth: useScreenCords ? this.xScaleToScreen(width) : width,
       adjustedHeight: useScreenCords ? this.yScaleToScreen(height) : height,
+    };
+  }
+
+  getAdjustedPoint(x, y) {
+    return {
+      adjustedX: useScreenCords ? this.xToScreen(x) : x,
+      adjustedY: useScreenCords ? this.yToScreen(y) : y,
     };
   }
 }

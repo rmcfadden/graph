@@ -64,10 +64,10 @@ export default class TopLayer extends Layer {
         if (x >= element.x && y >= element.y
           && x <= element.x + element.width && y <= element.y + element.height) {
           switch (element.name) {
-          case "zoomin": { this.ZoomIn(); break; }
-          case "zoomout": { this.ZoomOut(); break; }
-          case "settings": { break; }
-          default: { alert("Action now found"); }
+            case "zoomin": { this.ZoomIn(); break; }
+            case "zoomout": { this.ZoomOut(); break; }
+            case "settings": { break; }
+            default: { alert("Action now found"); }
           }
         }
       });
