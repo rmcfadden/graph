@@ -1,14 +1,18 @@
 import Utils from "../utils";
 
 export default class labelFormatter {
-  static format(label) {
-    if (typeof label !== "number") { return label; }
+  shouldFormatAsExponential(label) {
+    if (typeof label !== "number") { return false; }
     const labelUnsigned = label < 0 ? label * -1 : label;
-
-    if (labelUnsigned !== 0 && (labelUnsigned >= 1000000 || labelUnsigned <= 0.001)) {
+    return (labelUnsigned !== 0 && (labelUnsigned >= 1000000 || labelUnsigned <= 0.001));
+  }
+  
+  format(label) {
+    if (typeof label !== "number") { return label; }    
+    if(this.shouldFormatAsExponential(label)) {
       return label.toExponential(3);
     }
-
+    
     const decimalPlaces = Utils.decimalPlaces(label);
     if (decimalPlaces === 0) { return label; }
     if (decimalPlaces > 3) { return parseFloat(label).toFixed(4).toLocaleString(); }

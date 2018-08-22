@@ -1,4 +1,4 @@
-import labelFormatter from "../formatters/labelFormatter";
+import LabelFormatter from "../formatters/labelFormatter";
 
 export default class GridLabelsProvider {
   constructor(args) {
@@ -32,56 +32,55 @@ export default class GridLabelsProvider {
 
     ctx.lineWidth = xAxis.width;
 
-    if (grid.show) {
+    if (grid.showLabels) {
       const range = isMajor ? xRangeAdjusted : xRangeMinorAdjusted;
 
-      // Draw horizontal labels
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
 
       const dashWidth = ctx.measureText("-").width / 2.0;
-
-      // TODO: remove labels if they overlap
+      
+      const formatter = new LabelFormatter();
+      const hasExponential 
+        = (range.find(p => formatter.shouldFormatAsExponential(p)) !== undefined);        
+      if(hasExponential) { alert("HERE!!"); }
+        
       range.forEach((p, i) => {
-        if (grid.showLabels) {
-          if (isXAxis) {
-            const labelFormat = labelFormatter.format;
-            const pFormatted = labelFormat ? labelFormat(p) : p;
-            const textMetrics = ctx.measureText(pFormatted);
-            let xTextOffset = (textMetrics.width / 2.0);
-            if (p < 0) {
-              xTextOffset += dashWidth;
-            }
+        if (isXAxis) {
+          const pFormatted = formatter ? formatter.format(p) : p;
+          const textMetrics = ctx.measureText(pFormatted);
+          let xTextOffset = (textMetrics.width / 2.0);
+          if (p < 0) {
+            xTextOffset += dashWidth;
+          }
 
-            if (p === 0) {
-              xTextOffset += (textHeight / 2.0);
-            }
+          if (p === 0) {
+            xTextOffset += (textHeight / 2.0);
+          }
 
-            const yTextOffset = -1 * textHeight * 1.25;
-            ctx.lineWidth = 4; // StrokeWidth
-            ctx.font = `${textHeight}px Arial`;
+          const yTextOffset = -1 * textHeight * 1.25;
+          ctx.lineWidth = 4; // StrokeWidth
+          ctx.font = `${textHeight}px Arial`;
 
-            let currentX = layer.xToScreen(p) - xTextOffset;
-            const currentY = layer.yToScreen(0) - yTextOffset;
+          let currentX = layer.xToScreen(p) - xTextOffset;
+          const currentY = layer.yToScreen(0) - yTextOffset;
 
-            let isInScreenBounds = layer.isInScreenBounds({ x: currentX, y: currentY })
-              && layer.isInScreenBounds({ x: layer.xToScreen(p) + xTextOffset, y: currentY });
-            isInScreenBounds = true; // TODO: fix!!!!!!!!!!!!
+          let isInScreenBounds = layer.isInScreenBounds({ x: currentX, y: currentY })
+            && layer.isInScreenBounds({ x: layer.xToScreen(p) + xTextOffset, y: currentY });
 
-            if (i === 0 && !isInScreenBounds) {
-              currentX += xTextOffset + dashWidth;
-              isInScreenBounds = true;
-            }
+          if (i === 0 && !isInScreenBounds) {
+            currentX += xTextOffset + dashWidth;
+            isInScreenBounds = true;
+          }
 
-            if (i === range.length) {
-              currentX -= xTextOffset;
-              isInScreenBounds = true;
-            }
+          if (i === range.length -1 && !isInScreenBounds) {
+            currentX -= xTextOffset;
+            isInScreenBounds = true;
+          }
 
-            if (isInScreenBounds) {
-              ctx.strokeText(pFormatted, currentX, currentY);
-              ctx.fillText(pFormatted, currentX, currentY);
-            }
+          if (isInScreenBounds) {
+            ctx.strokeText(pFormatted, currentX, currentY);
+            ctx.fillText(pFormatted, currentX, currentY);
           }
         }
       });

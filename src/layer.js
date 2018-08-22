@@ -27,7 +27,7 @@ export default class Layer {
         xEnd,
         yStart,
         yEnd,
-      } = this;
+      } = this.calcs;
       return Utils.isBetween(p.x, this.xToScreen(xStart), this.xToScreen(xEnd))
         && Utils.isBetween(p.y, this.yToScreen(yEnd), this.yToScreen(yStart));
     };
