@@ -1,7 +1,11 @@
 import Utils from "../utils";
 
 export default class labelFormatter {
-  shouldFormatAsExponential(label) {
+  labelFormatter(args){
+    this.useExponential = (args && args.useExponential) || false;
+  }
+
+  static shouldFormatExponential(label) {
     if (typeof label !== "number") { return false; }
     const labelUnsigned = label < 0 ? label * -1 : label;
     return (labelUnsigned !== 0 && (labelUnsigned >= 1000000 || labelUnsigned <= 0.001));
@@ -9,7 +13,7 @@ export default class labelFormatter {
   
   format(label) {
     if (typeof label !== "number") { return label; }    
-    if(this.shouldFormatAsExponential(label)) {
+    if(label !== 0 && (this.useExponential || labelFormatter.shouldFormatExponential(label))) {
       return label.toExponential(3);
     }
     

@@ -28,7 +28,7 @@ export default class GridLabelsProvider {
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ? xAxis : yAxis;
     const grid = isMajor ? axis.majorGrid : axis.minorGrid;
-    const { textHeight } = grid;
+    const { labelHeight, labelFont } = grid;
 
     ctx.lineWidth = xAxis.width;
 
@@ -38,43 +38,68 @@ export default class GridLabelsProvider {
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
 
-      const dashWidth = ctx.measureText("-").width / 2.0;
+      const xSignAdjust = ctx.measureText("-").width / 2.0;
       
-      const formatter = new LabelFormatter();
-      const hasExponential 
-        = (range.find(p => formatter.shouldFormatAsExponential(p)) !== undefined);        
-      if(hasExponential) { alert("HERE!!"); }
-        
+      
+      const useExponential 
+        = (range.find(p => LabelFormatter.shouldFormatExponential(p)) !== undefined);        
+      const formatter = new LabelFormatter({useExponential: useExponential});
+
+      ctx.lineWidth = 4; // StrokeWidth
+      ctx.font = `${labelHeight}px ${labelFont}`;
+
+      const labelInfos = range.map( x => {
+        const label = formatter ? formatter.format(x) : x;
+        const labelMetrics = ctx.measureText(label);
+        const xTextOffset = 0;
+        const yTextOffset = 0;
+        return {
+          label,
+          labelMetrics,
+          xTextOffset,
+          yTextOffset,
+        };
+      });
+
       range.forEach((p, i) => {
         if (isXAxis) {
+          
           const pFormatted = formatter ? formatter.format(p) : p;
           const textMetrics = ctx.measureText(pFormatted);
-          let xTextOffset = (textMetrics.width / 2.0);
+          let xTextOffset = 0; //(textMetrics.width / 2.0);
+          
           if (p < 0) {
-            xTextOffset += dashWidth;
+            xTextOffset += xSignAdjust;
           }
 
           if (p === 0) {
-            xTextOffset += (textHeight / 2.0);
+            //xTextOffset += (labelHeight / 2.0);
           }
 
-          const yTextOffset = -1 * textHeight * 1.25;
-          ctx.lineWidth = 4; // StrokeWidth
-          ctx.font = `${textHeight}px Arial`;
+          let yTextOffset = -1 * labelHeight * 1.25;
+          
+          //xTextOffset = 0;
+          yTextOffset = 0;
+
+          ctx.textBaseline="top";
+          ctx.textAlign="center";
 
           let currentX = layer.xToScreen(p) - xTextOffset;
           const currentY = layer.yToScreen(0) - yTextOffset;
+
+          
+          // TODO: test offset here
 
           let isInScreenBounds = layer.isInScreenBounds({ x: currentX, y: currentY })
             && layer.isInScreenBounds({ x: layer.xToScreen(p) + xTextOffset, y: currentY });
 
           if (i === 0 && !isInScreenBounds) {
-            currentX += xTextOffset + dashWidth;
+            //currentX += xTextOffset + xSignAdjust;
             isInScreenBounds = true;
           }
 
           if (i === range.length -1 && !isInScreenBounds) {
-            currentX -= xTextOffset;
+            //currentX -= xTextOffset;
             isInScreenBounds = true;
           }
 

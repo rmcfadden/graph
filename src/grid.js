@@ -15,6 +15,8 @@ export default class Grid {
     this.showLabels = showLabels;
     this.labelStyle = "black";
     this.labelsInNegative = true;
-    this.textHeight = 16;
+    this.labelHeight = 16;
+    this.labelFont = "Arial";
+    this.labelOrientation = "bottom";
   }
 }
