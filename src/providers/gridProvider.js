@@ -5,7 +5,7 @@ export default class GridProvider {
     this.ctx = args.ctx;
     this.calcs = args.calcs;
     this.graph = args.graph;
-    this.layer = args.layer;
+    this.layer = args.layer;    
   }
 
   draw({
