@@ -45,17 +45,20 @@ export default class GridLabelsProvider {
         case "topleft": return {
           textBaseline: "bottom",
           textAlign: "right",
+          xMargin: -2 * margin,
+          yMargin: -1 * margin,
         };
         case "topright": return {
           textBaseline: "bottom",
           textAlign: "left",
+          xMargin: 2 * margin,
+          yMargin: -1 * margin,
         };
         case "bottomleft": return {
           textBaseline: "top",
           textAlign: "right",
           xMargin: -2 * margin,
           yMargin: 1 * margin,
-
         };
         case "bottomright": return {
           textBaseline: "top",
@@ -79,28 +82,31 @@ export default class GridLabelsProvider {
     } = this;
     const { config } = this.graph;
     const {
+      height,
       xRangeAdjusted,
       xRangeMinorAdjusted,
       xAxis,
       yAxis,
-      xStart,
       xEnd,
-      yStart,
-      yEnd,
     } = calcs;
 
     const isXAxis = (axisDirection === "x");
     const axis = isXAxis ? xAxis : yAxis;
     const grid = isMajor ? axis.majorGrid : axis.minorGrid;
     const {
-      height,
+      height: fontHeight,
       font,
-      position,
+      verticalPosition,
+      horizontalPosition,
       margin,
       show,
-      originPosition,
-      leftEdgePosition,
-      rightEdgePosition,
+      originHorizontalPosition,
+      leftEdgeHorizontalPosition,
+      rightEdgeHorizontalPosition,
+      topEdgeVerticalPosition,
+      bottomEdgeVerticalPosition,
+      style,
+      outOfRangeStyle,
     } = grid.label;
 
     ctx.lineWidth = xAxis.width;
@@ -117,34 +123,54 @@ export default class GridLabelsProvider {
 
       const formatter = new LabelFormatter({ useExponential });
       ctx.lineWidth = 3; // StrokeWidth
-      ctx.font = `${height}px ${font}`;
+      ctx.font = `${fontHeight}px ${font}`;
 
       const labels = range.map((x) => {
         const text = formatter ? formatter.format(x) : x;
         const metrics = ctx.measureText(text);
 
+        let adjustedVerticalPosition = verticalPosition;
+        let adjustedHorizontalPosition = horizontalPosition;
         // 0 position adjustment
-        let adjustedPosition = "";
         if (x === 0) {
-          adjustedPosition = originPosition;
+          adjustedHorizontalPosition = originHorizontalPosition;
         }
 
+        // top/bottom adjustments
+        if ((layer.yToScreen(0) - (fontHeight + margin)) <= 0) {
+          adjustedVerticalPosition = topEdgeVerticalPosition;
+        } else if ((layer.yToScreen(0) + (fontHeight + margin)) >= height) {
+          adjustedVerticalPosition = bottomEdgeVerticalPosition;
+        }
+
+        // left/right adjustments
         if ((layer.xToScreen(x) - metrics.width) <= 0) {
-          adjustedPosition = leftEdgePosition;
+          adjustedHorizontalPosition = leftEdgeHorizontalPosition;
         } else if ((layer.xToScreen(x) + metrics.width) >= layer.xToScreen(xEnd)) {
-          adjustedPosition = rightEdgePosition;
+          adjustedHorizontalPosition = rightEdgeHorizontalPosition;
         }
 
         const { textBaseline, textAlign, xMargin, yMargin } = this.getPositionContexts({
-          position: position + adjustedPosition,
+          position: adjustedVerticalPosition + adjustedHorizontalPosition,
           margin,
         });
+
+        // out of range y adjustment
+        let adjustedScreenY = layer.yToScreen(0);
+        let adjustedStyle = style;
+        if (layer.yToScreen(0) <= 0) {
+          adjustedScreenY = 0;
+          adjustedStyle = outOfRangeStyle;
+        } else if (layer.yToScreen(0) >= height) {
+          adjustedScreenY = height;
+          adjustedStyle = outOfRangeStyle;
+        }
 
         const xSignOffset = (x < 0) ? xSignAdjust : 0;
         const yTextOffset = yMargin;
         const xTextOffset = xMargin + xSignOffset;
         const currentX = layer.xToScreen(x) + xTextOffset;
-        const currentY = layer.yToScreen(0) + yTextOffset;
+        const currentY = adjustedScreenY + yTextOffset;
         return {
           currentX,
           currentY,
@@ -154,6 +180,7 @@ export default class GridLabelsProvider {
           yTextOffset,
           textBaseline,
           textAlign,
+          style: adjustedStyle,
         };
       });
 
@@ -164,14 +191,16 @@ export default class GridLabelsProvider {
           text,
           textBaseline,
           textAlign,
+          style: textStyle,
         } = label;
 
         ctx.textBaseline = textBaseline;
         ctx.textAlign = textAlign;
+        ctx.fillStyle = textStyle;
+console.log(textStyle);
         ctx.strokeText(text, currentX, currentY);
         ctx.fillText(text, currentX, currentY);
       });
-
     }
   }
 }

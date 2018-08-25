@@ -4,19 +4,23 @@ export default class Label {
     style = "black",
     height = 18,
     font = "Arial",
-    position = "bottom",
+    verticalPosition = "bottom",
+    horizontalPosition = "",
     margin = 2,
   } = {}) {
     this.show = show;
     this.style = style;
     this.height = height;
     this.font = font;
-    this.position = position;
+    this.verticalPosition = verticalPosition;
+    this.horizontalPosition = horizontalPosition;
     this.margin = margin;
-    this.originPosition = "left";
-    this.leftEdgePosition = "right";
-    this.rightEdgePosition = "left";
-    //this.topEdgePosition = "bottomright";
-    //this.bottomEdgePosition = "bottomleft";
+    this.originHorizontalPosition = "left";
+    this.leftEdgeHorizontalPosition = "right";
+    this.rightEdgeHorizontalPosition = "left";
+    this.topEdgeVerticalPosition = "bottom";
+    this.bottomEdgeVerticalPosition = "top";
+    this.showOutOfRange = true;
+    this.outOfRangeStyle = "grey";
   }
 }
