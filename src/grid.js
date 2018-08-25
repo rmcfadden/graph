@@ -17,5 +17,6 @@ export default class Grid {
     this.labelHeight = 18;
     this.labelFont = "Arial";
     this.labelPosition = "bottom";
+    this.labelMargin = 2;
   }
 }
