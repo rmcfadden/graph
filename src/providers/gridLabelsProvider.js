@@ -83,6 +83,7 @@ export default class GridLabelsProvider {
     const { config } = this.graph;
     const {
       height,
+      width,
       xRangeAdjusted,
       xRangeMinorAdjusted,
       xAxis,
@@ -121,13 +122,25 @@ export default class GridLabelsProvider {
         range.find(p => LabelFormatter.shouldFormatExponential(p)) !== undefined
       );
 
+      const average = width / range.length;
       const formatter = new LabelFormatter({ useExponential });
       ctx.lineWidth = 3; // StrokeWidth
       ctx.font = `${fontHeight}px ${font}`;
 
-      const labels = range.map((x) => {
+      const labelMeasures = range.map((x) => {
         const text = formatter ? formatter.format(x) : x;
         const metrics = ctx.measureText(text);
+        const length = metrics.width;
+        return {
+          x,
+          text,
+          metrics,
+          length,
+        };
+      });
+
+      const labels = labelMeasures.map((l) => {
+        const { x, text, metrics } = l;
 
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
@@ -197,7 +210,6 @@ export default class GridLabelsProvider {
         ctx.textBaseline = textBaseline;
         ctx.textAlign = textAlign;
         ctx.fillStyle = textStyle;
-console.log(textStyle);
         ctx.strokeText(text, currentX, currentY);
         ctx.fillText(text, currentX, currentY);
       });
