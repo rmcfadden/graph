@@ -197,7 +197,6 @@ export default class GridLabelsProvider {
         ctx.textBaseline = textBaseline;
         ctx.textAlign = textAlign;
         ctx.fillStyle = textStyle;
-console.log(textStyle);
         ctx.strokeText(text, currentX, currentY);
         ctx.fillText(text, currentX, currentY);
       });
