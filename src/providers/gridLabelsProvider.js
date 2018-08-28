@@ -1,5 +1,4 @@
 import LabelFormatter from "../formatters/labelFormatter";
-import { runInNewContext } from "vm";
 
 export default class GridLabelsProvider {
   constructor(args) {
@@ -123,7 +122,7 @@ export default class GridLabelsProvider {
         range.find(p => LabelFormatter.shouldFormatExponential(p)) !== undefined
       );
 
-      const averageGridLength = width / range.length;
+      const gridLength = width / range.length;
       const formatter = new LabelFormatter({ useExponential });
       ctx.lineWidth = 3; // StrokeWidth
       ctx.font = `${fontHeight}px ${font}`;
@@ -141,20 +140,17 @@ export default class GridLabelsProvider {
       });
 
       // reduce the number of labels by 2 if averageTextLength > averageGridLengt
-
       let adjustedLabelMeasures = [...labelMeasures];
+      let maxTextLength = adjustedLabelMeasures.map(x => x.length)
+        .reduce((prev, next) => Math.max(prev, next), 0);
 
-      let averageTextLength = adjustedLabelMeasures.map(x => x.length)
-        .reduce((prev, next) => prev + next)
-        / range.length;
+      const zeroIndex = adjustedLabelMeasures.findIndex(l => l.x == 0);
+      const zeroIndexAlign = ((zeroIndex % 2) === 0) ? 0 : 1;
 
-      while (averageTextLength > averageGridLength && adjustedLabelMeasures.length >= 2) {
-        adjustedLabelMeasures = adjustedLabelMeasures.filter((_, i) => (i % 2) === 0);
-        
-console.log(adjustedLabelMeasures.length);
-        averageTextLength = adjustedLabelMeasures.map(x => x.length)
-          .reduce((prev, next) => prev + next)
-          / range.length;
+      for (let i=1; maxTextLength > gridLength && adjustedLabelMeasures.length >= 2; i++) {
+        adjustedLabelMeasures = adjustedLabelMeasures.filter((_, i) => (i % 2) === zeroIndexAlign);
+        maxTextLength = adjustedLabelMeasures.map(x => x.length)
+          .reduce((prev, next) => Math.max(prev, next), 0) / Math.pow(2,i);
       }
 
       const labels = adjustedLabelMeasures.map((l) => {
@@ -183,7 +179,7 @@ console.log(adjustedLabelMeasures.length);
 
         // Default to center horizontal adjustment if labels will overlap
         if ((adjustedHorizontalPosition === "right" || adjustedHorizontalPosition === "left")
-          && (length >= (averageGridLength / 2))) {
+          && (length >= (gridLength / 2))) {
           adjustedHorizontalPosition = "";
         }
 

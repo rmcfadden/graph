@@ -14,7 +14,7 @@ export default class labelFormatter {
   format(label) {
     if (typeof label !== "number") { return label; }
     if (label !== 0 && (this.useExponential || labelFormatter.shouldFormatExponential(label))) {
-      return label.toExponential(20);
+      return label.toExponential(3);
     }
 
     const decimalPlaces = Utils.decimalPlaces(label);
