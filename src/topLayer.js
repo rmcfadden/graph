@@ -25,16 +25,16 @@ export default class TopLayer extends Layer {
     const m = 5;
     const left = this.canvas.width - (m + l);
 
-    const zoomInElement = this.elements.find(x => x.name === "zoomin")
-    zoomInElement.x = left
+    const zoomInElement = this.elements.find(x => x.name === "zoomin");
+    zoomInElement.x = left;
     zoomInElement.y = m;
 
-    const zoomOutElement = this.elements.find(x => x.name === "zoomout")
-    zoomOutElement.x = left
+    const zoomOutElement = this.elements.find(x => x.name === "zoomout");
+    zoomOutElement.x = left;
     zoomOutElement.y = l + m;
 
-    const settingsElement = this.elements.find(x => x.name === "settings")
-    settingsElement.x = left
+    const settingsElement = this.elements.find(x => x.name === "settings");
+    settingsElement.x = left;
     settingsElement.y = (l * 2) + m;    
   }
 
@@ -128,7 +128,7 @@ export default class TopLayer extends Layer {
       startYScale: transform.yScale,
       endXScale,
       endYScale,
-      duration: 150,
+      duration: 100,
     });
   }
 

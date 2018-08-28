@@ -22,5 +22,6 @@ export default class Label {
     this.bottomEdgeVerticalPosition = "top";
     this.showOutOfRange = true;
     this.outOfRangeStyle = "grey";
+    this.preventOverlap = true;
   }
 }
