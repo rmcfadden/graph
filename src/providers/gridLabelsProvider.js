@@ -1,4 +1,5 @@
 import LabelFormatter from "../formatters/labelFormatter";
+import { runInNewContext } from "vm";
 
 export default class GridLabelsProvider {
   constructor(args) {
@@ -122,7 +123,7 @@ export default class GridLabelsProvider {
         range.find(p => LabelFormatter.shouldFormatExponential(p)) !== undefined
       );
 
-      const average = width / range.length;
+      const averageGridLength = width / range.length;
       const formatter = new LabelFormatter({ useExponential });
       ctx.lineWidth = 3; // StrokeWidth
       ctx.font = `${fontHeight}px ${font}`;
@@ -139,8 +140,25 @@ export default class GridLabelsProvider {
         };
       });
 
-      const labels = labelMeasures.map((l) => {
-        const { x, text, metrics } = l;
+      // reduce the number of labels by 2 if averageTextLength > averageGridLengt
+
+      let adjustedLabelMeasures = [...labelMeasures];
+
+      let averageTextLength = adjustedLabelMeasures.map(x => x.length)
+        .reduce((prev, next) => prev + next)
+        / range.length;
+
+      while (averageTextLength > averageGridLength && adjustedLabelMeasures.length >= 2) {
+        adjustedLabelMeasures = adjustedLabelMeasures.filter((_, i) => (i % 2) === 0);
+        
+console.log(adjustedLabelMeasures.length);
+        averageTextLength = adjustedLabelMeasures.map(x => x.length)
+          .reduce((prev, next) => prev + next)
+          / range.length;
+      }
+
+      const labels = adjustedLabelMeasures.map((l) => {
+        const { x, text, metrics, length } = l;
 
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
@@ -163,10 +181,17 @@ export default class GridLabelsProvider {
           adjustedHorizontalPosition = rightEdgeHorizontalPosition;
         }
 
+        // Default to center horizontal adjustment if labels will overlap
+        if ((adjustedHorizontalPosition === "right" || adjustedHorizontalPosition === "left")
+          && (length >= (averageGridLength / 2))) {
+          adjustedHorizontalPosition = "";
+        }
+
         const { textBaseline, textAlign, xMargin, yMargin } = this.getPositionContexts({
           position: adjustedVerticalPosition + adjustedHorizontalPosition,
           margin,
         });
+
 
         // out of range y adjustment
         let adjustedScreenY = layer.yToScreen(0);
@@ -178,6 +203,7 @@ export default class GridLabelsProvider {
           adjustedScreenY = height;
           adjustedStyle = outOfRangeStyle;
         }
+
 
         const xSignOffset = (x < 0) ? xSignAdjust : 0;
         const yTextOffset = yMargin;
