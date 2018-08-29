@@ -5,11 +5,11 @@ export default class GridProvider {
     this.ctx = args.ctx;
     this.calcs = args.calcs;
     this.graph = args.graph;
-    this.layer = args.layer;    
+    this.layer = args.layer;
   }
 
   draw({
-    axisDirection = "x",
+    axis = "x",
     isMajor = true,
   } = {}) {
     const {
@@ -30,9 +30,9 @@ export default class GridProvider {
       yEnd,
     } = calcs;
 
-    const isXAxis = (axisDirection === "x");
-    const axis = isXAxis ? xAxis : yAxis;
-    const grid = isMajor ? axis.majorGrid : axis.minorGrid;
+    const isXAxis = (axis === "x");
+    const selectedAxis = isXAxis ? xAxis : yAxis;
+    const grid = isMajor ? selectedAxis.majorGrid : selectedAxis.minorGrid;
     const { textHeight } = grid;
 
     ctx.lineWidth = xAxis.width;

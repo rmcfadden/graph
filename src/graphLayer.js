@@ -24,9 +24,9 @@ export default class GraphLayer extends Layer {
     });
 
     gridProv.draw({ isMajor: false });
-    gridProv.draw({ axisDirection: "y", isMajor: false });
+    gridProv.draw({ axis: "y", isMajor: false });
     gridProv.draw();
-    gridProv.draw({ axisDirection: "y" });
+    gridProv.draw({ axis: "y" });
 
     const axesProv = new AxesProvider({
       ctx,
@@ -34,6 +34,7 @@ export default class GraphLayer extends Layer {
       layer: this,
     });
     axesProv.draw();
+    axesProv.draw({ axis: "y" });
 
     const labelsProv = new GridLabelsProvider({
       ctx,
@@ -42,5 +43,6 @@ export default class GraphLayer extends Layer {
       layer: this,
     });
     labelsProv.draw();
+    labelsProv.draw({ axis: "y" });
   }
 }

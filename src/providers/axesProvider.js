@@ -7,9 +7,12 @@ export default class AxesProvider {
     this.layer = args.layer;
   }
 
-  draw() {
+  draw({
+    axis = "x",
+  } = {}) {
     const { ctx, calcs, layer } = this;
     const {
+      xAxis,
       yAxis,
       xStart,
       xEnd,
@@ -19,7 +22,7 @@ export default class AxesProvider {
 
     ctx.beginPath();
 
-    if (yAxis.show) {
+    if (axis === "x" && xAxis.show) {
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;
@@ -29,7 +32,7 @@ export default class AxesProvider {
         Utils.adjust(layer.yToScreen(0), lineWidth));
     }
 
-    if (yAxis.show) {
+    if (axis === "y" && yAxis.show) {
       ctx.strokeStyle = yAxis.style;
       ctx.lineWidth = yAxis.width;
       const { lineWidth } = ctx;

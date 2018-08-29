@@ -72,7 +72,7 @@ export default class GridLabelsProvider {
   }
 
   draw({
-    axisDirection = "x",
+    axis = "x",
     isMajor = true,
   } = {}) {
     const {
@@ -86,14 +86,16 @@ export default class GridLabelsProvider {
       width,
       xRangeAdjusted,
       xRangeMinorAdjusted,
+      yRangeAdjusted,
+      yRangeMinorAdjusted,
       xAxis,
       yAxis,
       xEnd,
     } = calcs;
 
-    const isXAxis = (axisDirection === "x");
-    const axis = isXAxis ? xAxis : yAxis;
-    const grid = isMajor ? axis.majorGrid : axis.minorGrid;
+    const isXAxis = (axis === "x");
+    const selectedAxis = isXAxis ? xAxis : yAxis;
+    const grid = isMajor ? selectedAxis.majorGrid : selectedAxis.minorGrid;
     const {
       height: fontHeight,
       font,
@@ -110,10 +112,13 @@ export default class GridLabelsProvider {
       outOfRangeStyle,
     } = grid.label;
 
-    ctx.lineWidth = xAxis.width;
+    ctx.lineWidth = selectedAxis.width;
 
     if (show) {
-      const range = isMajor ? xRangeAdjusted : xRangeMinorAdjusted;
+      const rangeAdjusted = (axis === "x") ? xRangeAdjusted : yRangeAdjusted;
+      const rangeMinorAdjusted = (axis === "x") ? xRangeMinorAdjusted : yRangeMinorAdjusted;
+      const range = isMajor ? rangeAdjusted : rangeMinorAdjusted;
+
       ctx.strokeStyle = config.backgroundStyle;
       ctx.fillStyle = grid.labelStyle;
 
@@ -127,12 +132,12 @@ export default class GridLabelsProvider {
       ctx.lineWidth = 3; // StrokeWidth
       ctx.font = `${fontHeight}px ${font}`;
 
-      const labelMeasures = range.map((x) => {
-        const text = formatter ? formatter.format(x) : x;
+      const labelMeasures = range.map((v) => {
+        const text = formatter ? formatter.format(v) : v;
         const metrics = ctx.measureText(text);
         const length = metrics.width;
         return {
-          x,
+          v,
           text,
           metrics,
           length,
@@ -141,53 +146,55 @@ export default class GridLabelsProvider {
 
       // reduce the number of labels by 2 if averageTextLength > averageGridLengt
       let adjustedLabelMeasures = [...labelMeasures];
-      let maxTextLength = adjustedLabelMeasures.map(x => x.length)
+      let maxTextLength = adjustedLabelMeasures.map(v => v.length)
         .reduce((prev, next) => Math.max(prev, next), 0);
 
-      const zeroIndex = adjustedLabelMeasures.findIndex(l => l.x == 0);
+      const zeroIndex = adjustedLabelMeasures.findIndex(l => l.v === 0);
       const zeroIndexAlign = ((zeroIndex % 2) === 0) ? 0 : 1;
 
-      for (let i=1; maxTextLength > gridLength && adjustedLabelMeasures.length >= 2; i++) {
-        adjustedLabelMeasures = adjustedLabelMeasures.filter((_, i) => (i % 2) === zeroIndexAlign);
-        maxTextLength = adjustedLabelMeasures.map(x => x.length)
-          .reduce((prev, next) => Math.max(prev, next), 0) / Math.pow(2,i);
+      for (let i = 1; maxTextLength > gridLength && adjustedLabelMeasures.length >= 2; i += 1) {
+        adjustedLabelMeasures = adjustedLabelMeasures.filter((_, j) => (j % 2) === zeroIndexAlign);
+        maxTextLength = adjustedLabelMeasures.map(v => v.length)
+          .reduce((prev, next) => Math.max(prev, next), 0) / (2 ** i);
       }
 
       const labels = adjustedLabelMeasures.map((l) => {
-        const { x, text, metrics, length } = l;
+        const { v, text, metrics, length } = l;
 
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
-        // 0 position adjustment
-        if (x === 0) {
-          adjustedHorizontalPosition = originHorizontalPosition;
-        }
 
-        // top/bottom adjustments
-        if ((layer.yToScreen(0) - (fontHeight + margin)) <= 0) {
-          adjustedVerticalPosition = topEdgeVerticalPosition;
-        } else if ((layer.yToScreen(0) + (fontHeight + margin)) >= height) {
-          adjustedVerticalPosition = bottomEdgeVerticalPosition;
-        }
+        if (axis === "x") {
+          // 0 position adjustment
+          if (v === 0) {
+            adjustedHorizontalPosition = originHorizontalPosition;
+          }
 
-        // left/right adjustments
-        if ((layer.xToScreen(x) - metrics.width) <= 0) {
-          adjustedHorizontalPosition = leftEdgeHorizontalPosition;
-        } else if ((layer.xToScreen(x) + metrics.width) >= layer.xToScreen(xEnd)) {
-          adjustedHorizontalPosition = rightEdgeHorizontalPosition;
-        }
+          // top/bottom adjustments
+          if ((layer.yToScreen(0) - (fontHeight + margin)) <= 0) {
+            adjustedVerticalPosition = topEdgeVerticalPosition;
+          } else if ((layer.yToScreen(0) + (fontHeight + margin)) >= height) {
+            adjustedVerticalPosition = bottomEdgeVerticalPosition;
+          }
 
-        // Default to center horizontal adjustment if labels will overlap
-        if ((adjustedHorizontalPosition === "right" || adjustedHorizontalPosition === "left")
-          && (length >= (gridLength / 2))) {
-          adjustedHorizontalPosition = "";
+          // left/right adjustments
+          if ((layer.xToScreen(v) - metrics.width) <= 0) {
+            adjustedHorizontalPosition = leftEdgeHorizontalPosition;
+          } else if ((layer.xToScreen(v) + metrics.width) >= layer.xToScreen(xEnd)) {
+            adjustedHorizontalPosition = rightEdgeHorizontalPosition;
+          }
+
+          // Default to center horizontal adjustment if labels will overlap
+          if ((adjustedHorizontalPosition === "right" || adjustedHorizontalPosition === "left")
+            && (length >= (gridLength / 2))) {
+            adjustedHorizontalPosition = "";
+          }
         }
 
         const { textBaseline, textAlign, xMargin, yMargin } = this.getPositionContexts({
           position: adjustedVerticalPosition + adjustedHorizontalPosition,
           margin,
         });
-
 
         // out of range y adjustment
         let adjustedScreenY = layer.yToScreen(0);
@@ -200,12 +207,14 @@ export default class GridLabelsProvider {
           adjustedStyle = outOfRangeStyle;
         }
 
-
-        const xSignOffset = (x < 0) ? xSignAdjust : 0;
+        const xSignOffset = (v < 0) ? xSignAdjust : 0;
         const yTextOffset = yMargin;
         const xTextOffset = xMargin + xSignOffset;
-        const currentX = layer.xToScreen(x) + xTextOffset;
-        const currentY = adjustedScreenY + yTextOffset;
+        const currentX = (axis === "x") ? layer.xToScreen(v) + xTextOffset
+          : layer.xToScreen(0);
+        const currentY = (axis === "x") ? adjustedScreenY + yTextOffset
+          : layer.yToScreen(v);
+
         return {
           currentX,
           currentY,
