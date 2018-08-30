@@ -1,10 +1,11 @@
 import Grid from "./grid";
 
 export default class Axis {
-  constructor({ 
+  constructor({
     start = -5.5,
     end = 5.5,
-    majorGrid = new Grid({ step: 0.5, style: "#000000", showLabels: true }),
+    majorGrid = new Grid({ step: 0.5, style: "#000000" }),
+    minorGrid = new Grid({ step: 0.1, style: "lightgrey", width: 0.5 }),
   } = {}) {
     this.start = start;
     this.end = end;
@@ -12,6 +13,6 @@ export default class Axis {
     this.width = 2.25;
     this.style = "#000000";
     this.majorGrid = majorGrid;
-    this.minorGrid = new Grid({ step: 0.1, style: "lightgrey", width: 0.5 });
+    this.minorGrid = minorGrid;
   }
 }

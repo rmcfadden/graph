@@ -1,4 +1,4 @@
-export default class Label {
+export default class Labels {
   constructor({
     show = true,
     style = "black",
@@ -7,6 +7,7 @@ export default class Label {
     verticalPosition = "bottom",
     horizontalPosition = "",
     margin = 2,
+    hidden = {},
   } = {}) {
     this.show = show;
     this.style = style;
@@ -23,5 +24,6 @@ export default class Label {
     this.showOutOfRange = true;
     this.outOfRangeStyle = "grey";
     this.preventOverlap = true;
+    this.hidden = hidden;
   }
 }

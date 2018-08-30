@@ -67,7 +67,7 @@ export default class TopLayer extends Layer {
             case "zoomin": { this.ZoomIn(); break; }
             case "zoomout": { this.ZoomOut(); break; }
             case "settings": { break; }
-            default: { alert("Action now found"); }
+            default: { throw new Error("Action now found"); }
           }
         }
       });

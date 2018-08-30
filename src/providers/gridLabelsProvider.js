@@ -110,7 +110,8 @@ export default class GridLabelsProvider {
       bottomEdgeVerticalPosition,
       style,
       outOfRangeStyle,
-    } = grid.label;
+      hidden,
+    } = grid.labels;
 
     ctx.lineWidth = selectedAxis.width;
 
@@ -133,6 +134,7 @@ export default class GridLabelsProvider {
       ctx.font = `${fontHeight}px ${font}`;
 
       const labelMeasures = range.map((v) => {
+        const isHidden = hidden[v] || false;
         const text = formatter ? formatter.format(v) : v;
         const metrics = ctx.measureText(text);
         const length = metrics.width;
@@ -141,6 +143,7 @@ export default class GridLabelsProvider {
           text,
           metrics,
           length,
+          isHidden,
         };
       });
 
@@ -159,7 +162,7 @@ export default class GridLabelsProvider {
       }
 
       const labels = adjustedLabelMeasures.map((l) => {
-        const { v, text, metrics, length } = l;
+        const { v, text, metrics, length, isHidden } = l;
 
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
@@ -198,22 +201,37 @@ export default class GridLabelsProvider {
 
         // out of range y adjustment
         let adjustedScreenY = layer.yToScreen(0);
+        let adjustedScreenX = layer.xToScreen(0);
         let adjustedStyle = style;
-        if (layer.yToScreen(0) <= 0) {
-          adjustedScreenY = 0;
-          adjustedStyle = outOfRangeStyle;
-        } else if (layer.yToScreen(0) >= height) {
-          adjustedScreenY = height;
-          adjustedStyle = outOfRangeStyle;
+
+        if (axis === "x") {
+          if (layer.yToScreen(0) <= 0) {
+            adjustedScreenY = 0;
+            adjustedStyle = outOfRangeStyle;
+          } else if (layer.yToScreen(0) >= height) {
+            adjustedScreenY = height;
+            adjustedStyle = outOfRangeStyle;
+          }
         }
 
-        const xSignOffset = (v < 0) ? xSignAdjust : 0;
+        if (axis === "y") {
+          if (layer.xToScreen(0) <= 0) {
+            adjustedScreenX = 0;
+            adjustedStyle = outOfRangeStyle;
+          } else if (layer.xToScreen(0) >= width) {
+            adjustedScreenX = width;
+            adjustedStyle = outOfRangeStyle;
+          }
+        }
+
+
+        const xSignOffset = (axis === "x") && (v < 0) ? xSignAdjust : 0;
         const yTextOffset = yMargin;
         const xTextOffset = xMargin + xSignOffset;
         const currentX = (axis === "x") ? layer.xToScreen(v) + xTextOffset
-          : layer.xToScreen(0);
+          : adjustedScreenX + xTextOffset;
         const currentY = (axis === "x") ? adjustedScreenY + yTextOffset
-          : layer.yToScreen(v);
+          : layer.yToScreen(v) + yTextOffset;
 
         return {
           currentX,
@@ -224,26 +242,28 @@ export default class GridLabelsProvider {
           yTextOffset,
           textBaseline,
           textAlign,
+          isHidden,
           style: adjustedStyle,
         };
       });
 
-      labels.forEach((label) => {
-        const {
-          currentX,
-          currentY,
-          text,
-          textBaseline,
-          textAlign,
-          style: textStyle,
-        } = label;
+      labels.filter(l => !l.isHidden)
+        .forEach((label) => {
+          const {
+            currentX,
+            currentY,
+            text,
+            textBaseline,
+            textAlign,
+            style: textStyle,
+          } = label;
 
-        ctx.textBaseline = textBaseline;
-        ctx.textAlign = textAlign;
-        ctx.fillStyle = textStyle;
-        ctx.strokeText(text, currentX, currentY);
-        ctx.fillText(text, currentX, currentY);
-      });
+          ctx.textBaseline = textBaseline;
+          ctx.textAlign = textAlign;
+          ctx.fillStyle = textStyle;
+          ctx.strokeText(text, currentX, currentY);
+          ctx.fillText(text, currentX, currentY);
+        });
     }
   }
 }

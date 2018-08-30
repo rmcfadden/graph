@@ -1,5 +1,7 @@
 import AutoGridConfig from "./autoGridConfig";
 import Axis from "./axis";
+import Grid from "./grid";
+import Labels from "./labels";
 
 export default class Config {
   constructor() {
@@ -11,7 +13,19 @@ export default class Config {
     this.autoGrid = new AutoGridConfig();
     this.axes = {
       x: new Axis(),
-      y: new Axis({ start: -3.5, end: 3.5 }),
+      y: new Axis({
+        start: -3.5,
+        end: 3.5,
+        majorGrid: new Grid({
+          step: 0.5,
+          style: "#000000",
+          labels: new Labels({
+            verticalPosition: "",
+            horizontalPosition: "left",
+            hidden: { 0: true },
+          }),
+        }),
+      }),
     };
     this.transform = {
       xScale: 1.0,
