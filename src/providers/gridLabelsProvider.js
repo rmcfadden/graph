@@ -90,7 +90,10 @@ export default class GridLabelsProvider {
       yRangeMinorAdjusted,
       xAxis,
       yAxis,
+      xStart,
       xEnd,
+      yStart,
+      yEnd,
     } = calcs;
 
     const isXAxis = (axis === "x");
@@ -111,6 +114,7 @@ export default class GridLabelsProvider {
       style,
       outOfRangeStyle,
       hidden,
+      showZero,
     } = grid.labels;
 
     ctx.lineWidth = selectedAxis.width;
@@ -143,7 +147,7 @@ export default class GridLabelsProvider {
           text,
           metrics,
           length,
-          isHidden,
+          isHidden: isHidden || (!showZero && v === 0),
         };
       });
 
@@ -166,6 +170,8 @@ export default class GridLabelsProvider {
 
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
+
+        let adjustedIsHidden = isHidden;
 
         if (axis === "x") {
           // 0 position adjustment
@@ -194,6 +200,27 @@ export default class GridLabelsProvider {
           }
         }
 
+        if (axis === "y") {
+          // 0 position adjustment
+          if (v === 0) {
+            adjustedHorizontalPosition = originHorizontalPosition;
+          }
+
+          // top/bottom adjustments
+          if ((layer.yToScreen(v) - (fontHeight + margin)) <= 0) {
+            adjustedVerticalPosition = topEdgeVerticalPosition;
+          } else if ((layer.yToScreen(v) + (fontHeight + margin)) >= height) {
+            adjustedVerticalPosition = bottomEdgeVerticalPosition;
+          }
+
+          // left/right adjustments
+          if ((layer.xToScreen(0) - metrics.width) <= 0) {
+            adjustedHorizontalPosition = leftEdgeHorizontalPosition;
+          } else if ((layer.xToScreen(v) + fontHeight) >= layer.xToScreen(xEnd)) {
+            adjustedHorizontalPosition = rightEdgeHorizontalPosition;
+          }
+        }
+
         const { textBaseline, textAlign, xMargin, yMargin } = this.getPositionContexts({
           position: adjustedVerticalPosition + adjustedHorizontalPosition,
           margin,
@@ -218,12 +245,13 @@ export default class GridLabelsProvider {
           if (layer.xToScreen(0) <= 0) {
             adjustedScreenX = 0;
             adjustedStyle = outOfRangeStyle;
+            adjustedIsHidden = (v === 0) ? false : adjustedIsHidden;
           } else if (layer.xToScreen(0) >= width) {
             adjustedScreenX = width;
             adjustedStyle = outOfRangeStyle;
+            adjustedIsHidden = (v === 0) ? false : adjustedIsHidden;
           }
         }
-
 
         const xSignOffset = (axis === "x") && (v < 0) ? xSignAdjust : 0;
         const yTextOffset = yMargin;
@@ -242,7 +270,7 @@ export default class GridLabelsProvider {
           yTextOffset,
           textBaseline,
           textAlign,
-          isHidden,
+          isHidden: adjustedIsHidden,
           style: adjustedStyle,
         };
       });

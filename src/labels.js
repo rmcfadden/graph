@@ -8,6 +8,7 @@ export default class Labels {
     horizontalPosition = "",
     margin = 2,
     hidden = {},
+    showZero = true,
   } = {}) {
     this.show = show;
     this.style = style;
@@ -25,5 +26,6 @@ export default class Labels {
     this.outOfRangeStyle = "grey";
     this.preventOverlap = true;
     this.hidden = hidden;
+    this.showZero = showZero;
   }
 }

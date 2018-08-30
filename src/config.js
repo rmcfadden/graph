@@ -22,7 +22,7 @@ export default class Config {
           labels: new Labels({
             verticalPosition: "",
             horizontalPosition: "left",
-            hidden: { 0: true },
+            showZero: false,
           }),
         }),
       }),
