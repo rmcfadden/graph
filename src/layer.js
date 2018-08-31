@@ -56,7 +56,6 @@ export default class Layer {
   load() {
   }
 
-
   draw() {
     this.elements.forEach((element) => {
       if (element.type === "line") {
@@ -160,7 +159,7 @@ export default class Layer {
   } = {}) {
     const image = new Image();
     image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
-    image.onload = () => this.ctx.drawImage(image, x, y, width, height);    
+    image.onload = () => this.ctx.drawImage(image, x, y, width, height);
   }
 
   getAdjustedPointDimension(x, y, width, height, useScreenCords) {
@@ -172,7 +171,7 @@ export default class Layer {
     };
   }
 
-  getAdjustedPoint(x, y) {
+  getAdjustedPoint(x, y, useScreenCords) {
     return {
       adjustedX: useScreenCords ? this.xToScreen(x) : x,
       adjustedY: useScreenCords ? this.yToScreen(y) : y,
