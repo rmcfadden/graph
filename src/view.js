@@ -29,10 +29,25 @@ export default class View {
 
     this.setSelectedLayer("content");
 
-    window.onresize = () => {      
+    window.onresize = () => {
       this.draw();
     };
     window.onorientationchange = window.onresize;
+
+    this.createOffscreenCanvas = () => {
+      const offScreenCanvas = document.createElement("canvas");
+      offScreenCanvas.width = this.width;
+      offScreenCanvas.height = this.height;
+      const context = offScreenCanvas.getContext("2d");
+      context.fillStyle = 'orange'; //set fill color
+      context.fillRect(10, 10, 200, 200);
+      return offScreenCanvas;
+    }
+
+    this.copyToOnScreen = (offScreenCanvas) => {
+      const onScreenContext = document.getElementById("onScreen").getContext("2d");
+      onScreenContext.drawImage(offScreenCanvas, 0, 0);
+    }
   }
 
   getSelectedLayer() {
@@ -185,6 +200,5 @@ export default class View {
       yMinorStep,
       distances,
     });
-    
   }
 }
