@@ -33,9 +33,9 @@ export default class Layer {
     };
   }
 
-  setCanvas(id) {
-    this.canvas = document.getElementById(id);
-    this.ctx = this.canvas.getContext("2d");
+  setCanvasContext(canvas, ctx) {
+    this.canvas = canvas;
+    this.ctx = ctx;
   }
 
   get lineWidth() { return this.ctx.lineWidth; }

@@ -38,9 +38,8 @@ export default class TopLayer extends Layer {
     settingsElement.y = (l * 2) + m;    
   }
 
-  setCanvas(id) {
-    super.setCanvas(id);
-
+  setCanvasContext(canvas, ctx) {
+    super.setCanvasContext(canvas, ctx);
     this.canvas.onmousedown = (e) => {
       this.isMouseDown = true;
       const { x, y } = this.lastCoords;
@@ -67,7 +66,7 @@ export default class TopLayer extends Layer {
             case "zoomin": { this.ZoomIn(); break; }
             case "zoomout": { this.ZoomOut(); break; }
             case "settings": { break; }
-            default: { throw new Error("Action now found"); }
+            default: { alert("Action now found"); }
           }
         }
       });
@@ -128,7 +127,7 @@ export default class TopLayer extends Layer {
       startYScale: transform.yScale,
       endXScale,
       endYScale,
-      duration: 100,
+      duration: 250,
     });
   }
 

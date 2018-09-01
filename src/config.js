@@ -10,6 +10,8 @@ export default class Config {
     this.borderWidth = 1;
     this.backgroundStyle = "white";
     this.useAutoGrid = true;
+    this.drawOffScreen = true;
+
     this.autoGrid = new AutoGridConfig();
     this.axes = {
       x: new Axis(),

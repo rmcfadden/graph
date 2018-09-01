@@ -15,6 +15,22 @@ export default class View {
     this.height = null;
     this.selectedLayer = null;
 
+    this.createOffScreenCanvasContext = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = this.width;
+      canvas.height = this.height;
+      const ctx = canvas.getContext("2d");
+      return { canvas, ctx };
+    }
+
+    this.copyCanvasToOnScreenCanvas = (layer) => {
+      const { canvasName, canvas: offScreenCanvas } = layer;
+      const canvas = document.getElementById(canvasName);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(offScreenCanvas, 0, 0);
+      layer.setCanvasContext(canvas, ctx);
+    }
+
     const backgroundLayer = new BackgroundLayer({ view: this, name: "background" });
     this.addLayer(backgroundLayer);
 
@@ -33,21 +49,6 @@ export default class View {
       this.draw();
     };
     window.onorientationchange = window.onresize;
-
-    this.createOffscreenCanvas = () => {
-      const offScreenCanvas = document.createElement("canvas");
-      offScreenCanvas.width = this.width;
-      offScreenCanvas.height = this.height;
-      const context = offScreenCanvas.getContext("2d");
-      context.fillStyle = 'orange'; //set fill color
-      context.fillRect(10, 10, 200, 200);
-      return offScreenCanvas;
-    }
-
-    this.copyToOnScreen = (offScreenCanvas) => {
-      const onScreenContext = document.getElementById("onScreen").getContext("2d");
-      onScreenContext.drawImage(offScreenCanvas, 0, 0);
-    }
   }
 
   getSelectedLayer() {
@@ -69,40 +70,70 @@ export default class View {
   }
 
   applyLayers() {
-    const graphElement = document.getElementById(this.graph.id);
-    graphElement.style.position = "relative";
+    const { id, config } = this.graph;
+    const { drawOffScreen } = config;
 
+    const graphElement = document.getElementById(id);
+    graphElement.style.position = "relative";
     const canvasHtml = this.layers
-      .reduce((acc, curr) => `${acc}<canvas id='canvas-${this.graph.id}-${curr.name}'`
+      .reduce((acc, curr) => `${acc}<canvas id='canvas-${id}-${curr.name}'`
         + ` style='position: absolute; left: 0; top: 0; z-index: ${curr.index};'></canvas>`,
       "");
-
     graphElement.innerHTML = canvasHtml;
-    this.layers.forEach(x => x.setCanvas(`canvas-${this.graph.id}-${x.name}`));
-    this.layers.forEach(x => this.setLayerDimentions(x));
+
+    this.layers.forEach(x => {
+      const canvasName = `canvas-${id}-${x.name}`;
+      x.canvasName = canvasName;
+      if(drawOffScreen) {
+        const { canvas, ctx } = this.createOffScreenCanvasContext()
+        x.setCanvasContext(canvas, ctx);
+      } else {
+        const canvas = document.getElementById(canvasName);
+        const ctx = canvas.getContext("2d");  
+        x.setCanvasContext(canvas, ctx);
+      }
+      this.setLayerDimentions(x);
+    }); 
   }
 
   setLayerDimentions(layer) {
     const { canvas } = layer;
+    const { config } = this.graph;
+    const { drawOffScreen } = config;
+
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     canvas.width = this.width;
     canvas.height = this.height;
+
+    if(drawOffScreen) {
+      const onScreenCanvas= document.getElementById(layer.canvasName);
+      onScreenCanvas.width = this.width;
+      onScreenCanvas.height = this.height;
+    }
   }
 
   layout() {
     this.calcs = this.preCalculations();
-    Object.keys(this.layers).forEach((x) => {
-      const layer = this.layers[x];
-      this.setLayerDimentions(layer);
-      this.layers[x].calcs = this.calcs;
-      this.layers[x].layout();
+    this.layers.forEach((l) => {
+      this.setLayerDimentions(l);
+      l.calcs = this.calcs;
+      l.layout();
     });
   }
 
   draw() {
+    const { id, config } = this.graph;
+    const { drawOffScreen } = config;
+    
     this.layout();
-    Object.keys(this.layers).forEach(x => this.layers[x].draw());
+
+    this.layers.forEach(l => {
+      l.draw();
+      if(drawOffScreen) {
+        this.copyCanvasToOnScreenCanvas(l);
+      }
+    });
   }
 
   preCalculations() {
