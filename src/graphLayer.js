@@ -10,6 +10,7 @@ export default class GraphLayer extends Layer {
   }
 
   draw() {
+    super.draw();    
     this.drawAxes();
   }
 

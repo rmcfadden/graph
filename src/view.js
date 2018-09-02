@@ -77,7 +77,8 @@ export default class View {
     graphElement.style.position = "relative";
     const canvasHtml = this.layers
       .reduce((acc, curr) => `${acc}<canvas id='canvas-${id}-${curr.name}'`
-        + ` style='position: absolute; left: 0; top: 0; z-index: ${curr.index};'></canvas>`,
+        + ` width='${this.width}' height='${this.height}'`
+        + ` style='position: absolute; top:0; left:0; z-index:${curr.index};'></canvas>`,
       "");
     graphElement.innerHTML = canvasHtml;
 
@@ -103,13 +104,16 @@ export default class View {
 
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    canvas.width = this.width;
-    canvas.height = this.height;
+    
+    if(layer.isDirty) {
+      canvas.width = this.width;
+      canvas.height = this.height;
 
-    if(drawOffScreen) {
-      const onScreenCanvas= document.getElementById(layer.canvasName);
-      onScreenCanvas.width = this.width;
-      onScreenCanvas.height = this.height;
+      if(drawOffScreen) {
+        const onScreenCanvas= document.getElementById(layer.canvasName);
+        onScreenCanvas.width = this.width;
+        onScreenCanvas.height = this.height;
+      }
     }
   }
 
@@ -117,8 +121,10 @@ export default class View {
     this.calcs = this.preCalculations();
     this.layers.forEach((l) => {
       this.setLayerDimentions(l);
-      l.calcs = this.calcs;
-      l.layout();
+      l.calcs = this.calcs;      
+      if(l.isDirty) {
+        l.layout();
+      }
     });
   }
 
@@ -128,7 +134,7 @@ export default class View {
     
     this.layout();
 
-    this.layers.forEach(l => {
+    this.layers.filter(l => l.isDirty).forEach(l => {
       l.draw();
       if(drawOffScreen) {
         this.copyCanvasToOnScreenCanvas(l);

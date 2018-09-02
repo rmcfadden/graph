@@ -37,6 +37,11 @@ export default class TopLayer extends Layer {
     settingsElement.x = left;
     settingsElement.y = (l * 2) + m;    
   }
+  
+  draw() {
+    super.draw();
+    this.isDirty = false;
+  }
 
   setCanvasContext(canvas, ctx) {
     super.setCanvasContext(canvas, ctx);

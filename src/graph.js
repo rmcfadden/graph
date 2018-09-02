@@ -19,7 +19,7 @@ export default class Graph {
     this.view.setSelectedLayer(name);
   }
 
-  draw() {
+  draw() {    
     this.view.draw();
   }
 }

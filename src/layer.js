@@ -14,6 +14,8 @@ export default class Layer {
     this.xScaleToScreen = x => x * this.calcs.xScreenScale;
     this.yScaleToScreen = y => y * this.calcs.yScreenScale;
     this.elements = [];
+    this.isDirty = true;
+    this.images = {};
 
     this.isInBounds = (p) => {
       const { xAxis, yAxis } = this;
@@ -57,6 +59,7 @@ export default class Layer {
   }
 
   draw() {
+    this.ctx.clearRect(0,0, this.width, this.height);
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
@@ -157,9 +160,16 @@ export default class Layer {
     height,
     name,
   } = {}) {
-    const image = new Image();
-    image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
-    image.onload = () => this.ctx.drawImage(image, x, y, width, height);
+
+    const cachedImage = this.images[src];
+    if(!cachedImage) {
+      const image = new Image();
+      image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
+      image.onload = () => this.ctx.drawImage(image, x, y, width, height);
+      this.images[src] = image;
+    } else {
+      this.ctx.drawImage(cachedImage, x, y, width, height);
+    }
   }
 
   getAdjustedPointDimension(x, y, width, height, useScreenCords) {
