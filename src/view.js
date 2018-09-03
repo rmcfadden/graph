@@ -21,7 +21,7 @@ export default class View {
       canvas.height = this.height;
       const ctx = canvas.getContext("2d");
       return { canvas, ctx };
-    }
+    };
 
     this.copyCanvasToOnScreenCanvas = (layer) => {
       const { canvasName, canvas: offScreenCanvas } = layer;
@@ -29,7 +29,9 @@ export default class View {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(offScreenCanvas, 0, 0);
       layer.setCanvasContext(canvas, ctx);
-    }
+    };
+
+    this.getCanvasName = (id, name) => `canvas-${id}-${name}`;
 
     const backgroundLayer = new BackgroundLayer({ view: this, name: "background" });
     this.addLayer(backgroundLayer);
@@ -37,7 +39,7 @@ export default class View {
     const graphLayer = new GraphLayer({ view: this, name: "graph" });
     this.addLayer(graphLayer);
 
-    const contentLayer = new Layer({ view: this, name: "content" });
+    const contentLayer = new Layer({ view: this, name: "content", useNativeTransform: true });
     this.addLayer(contentLayer);
 
     const topLayer = new TopLayer({ view: this, name: "top" });
@@ -46,6 +48,7 @@ export default class View {
     this.setSelectedLayer("content");
 
     window.onresize = () => {
+      this.layers.forEach((l) => (l.isDirty = true ));
       this.draw();
     };
     window.onorientationchange = window.onresize;
@@ -62,8 +65,10 @@ export default class View {
   }
 
   addLayer(layer) {
+    const { id } = this.graph;
     const newLayer = layer;
     newLayer.index = this.layers.length;
+    newLayer.canvasName = this.getCanvasName(id, newLayer.name);
     this.layers.push(newLayer);
     this.applyLayers();
     newLayer.load();
@@ -76,25 +81,23 @@ export default class View {
     const graphElement = document.getElementById(id);
     graphElement.style.position = "relative";
     const canvasHtml = this.layers
-      .reduce((acc, curr) => `${acc}<canvas id='canvas-${id}-${curr.name}'`
+      .reduce((acc, curr) => `${acc}<canvas id='${this.getCanvasName(id, curr.name)}'`
         + ` width='${this.width}' height='${this.height}'`
         + ` style='position: absolute; top:0; left:0; z-index:${curr.index};'></canvas>`,
       "");
     graphElement.innerHTML = canvasHtml;
 
-    this.layers.forEach(x => {
-      const canvasName = `canvas-${id}-${x.name}`;
-      x.canvasName = canvasName;
-      if(drawOffScreen) {
-        const { canvas, ctx } = this.createOffScreenCanvasContext()
-        x.setCanvasContext(canvas, ctx);
+    this.layers.forEach((l) => {
+      if (drawOffScreen) {
+        const { canvas, ctx } = this.createOffScreenCanvasContext();
+        l.setCanvasContext(canvas, ctx);
       } else {
-        const canvas = document.getElementById(canvasName);
-        const ctx = canvas.getContext("2d");  
-        x.setCanvasContext(canvas, ctx);
+        const canvas = document.getElementById(l.canvasName);
+        const ctx = canvas.getContext("2d");
+        l.setCanvasContext(canvas, ctx);
       }
-      this.setLayerDimentions(x);
-    }); 
+      this.setLayerDimentions(l);
+    });
   }
 
   setLayerDimentions(layer) {
@@ -104,13 +107,13 @@ export default class View {
 
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    
-    if(layer.isDirty) {
+
+    if (layer.isDirty) {
       canvas.width = this.width;
       canvas.height = this.height;
 
-      if(drawOffScreen) {
-        const onScreenCanvas= document.getElementById(layer.canvasName);
+      if (drawOffScreen) {
+        const onScreenCanvas = document.getElementById(layer.canvasName);
         onScreenCanvas.width = this.width;
         onScreenCanvas.height = this.height;
       }
@@ -121,22 +124,21 @@ export default class View {
     this.calcs = this.preCalculations();
     this.layers.forEach((l) => {
       this.setLayerDimentions(l);
-      l.calcs = this.calcs;      
-      if(l.isDirty) {
+      l.calcs = this.calcs;
+      if (l.isDirty) {
         l.layout();
       }
     });
   }
 
   draw() {
-    const { id, config } = this.graph;
+    const { config } = this.graph;
     const { drawOffScreen } = config;
-    
     this.layout();
 
-    this.layers.filter(l => l.isDirty).forEach(l => {
+    this.layers.filter(l => l.isDirty).forEach((l) => {
       l.draw();
-      if(drawOffScreen) {
+      if (drawOffScreen) {
         this.copyCanvasToOnScreenCanvas(l);
       }
     });
@@ -171,7 +173,7 @@ export default class View {
     if (applyAutoGrid) {
       const scaledXDistances = distances.map(x => xDistance / x.majorStep);
       const scaledYDistances = distances.map(x => yDistance / x.majorStep);
-      const gridCellLength = 120;
+      const gridCellLength = 160; // TODO: move to config
       const xGridLines = Math.floor(width / gridCellLength);
       const yGridLines = Math.floor(height / gridCellLength);
       const closestXIndex = Utils.closestIndex(scaledXDistances, xGridLines);

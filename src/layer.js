@@ -7,6 +7,7 @@ export default class Layer {
     this.view = args.view;
     this.graph = this.view.graph;
     this.calcs = new Calcs();
+    this.useNativeTransform = args.useNativeTransform || false;
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
     this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
@@ -14,14 +15,17 @@ export default class Layer {
     this.xScaleToScreen = x => x * this.calcs.xScreenScale;
     this.yScaleToScreen = y => y * this.calcs.yScreenScale;
     this.elements = [];
-    this.isDirty = true;
     this.images = {};
+
+    this.isDirty = true;
 
     this.isInBounds = (p) => {
       const { xAxis, yAxis } = this;
       return Utils.isBetween(p.x, xAxis.start, xAxis.end)
         && Utils.isBetween(p.y, yAxis.start, yAxis.end);
     };
+
+    this.setDirty = () => { this.isDirty = true; };
 
     this.isInScreenBounds = (p) => {
       const {
@@ -38,6 +42,10 @@ export default class Layer {
   setCanvasContext(canvas, ctx) {
     this.canvas = canvas;
     this.ctx = ctx;
+
+    if (this.useNativeTransform) {
+
+    }
   }
 
   get lineWidth() { return this.ctx.lineWidth; }
@@ -59,7 +67,10 @@ export default class Layer {
   }
 
   draw() {
-    this.ctx.clearRect(0,0, this.width, this.height);
+    //this.ctx.save();
+    //this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    //this.ctx.restore();
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
@@ -69,6 +80,9 @@ export default class Layer {
       }
       if (element.type === "image") {
         this.drawImage(element);
+      }
+      if (element.type === "arc") {
+        this.drawArc(element);
       }
     });
   }
@@ -112,6 +126,27 @@ export default class Layer {
     this.elements.push(element);
   }
 
+  addArc(args) {
+    const element = {
+      type: "arc",
+      strokeStyle: args.strokeStyle || this.strokeStyle,
+      fillStyle: args.fillStyle || this.fillStyle,
+      lineWidth: args.lineWidth || this.lineWidth,
+      useScreenCords: args.useScreenCords !== undefined || true,
+      ...args,
+    };
+    this.elements.push(element);
+  }
+
+  addImage(args) {
+    const element = {
+      type: "image",
+      ...args,
+    };
+    this.elements.push(element);
+  }
+
+
   drawRect({
     x,
     y,
@@ -144,12 +179,36 @@ export default class Layer {
     }
   }
 
-  addImage(args) {
-    const element = {
-      type: "image",
-      ...args,
-    };
-    this.elements.push(element);
+  drawArc({
+    x,
+    y,
+    r,
+    sAngle,
+    eAngle,
+    counterclockwise = false,
+    lineWidth,
+    strokeStyle,
+    fillStyle,
+    stroke = true,
+    fill = false,
+    useScreenCords = true,
+  } = {}) {
+    const {
+      adjustedX,
+      adjustedY,
+    } = this.getAdjustedPoint(x, y, useScreenCords);
+
+    this.ctx.beginPath();
+    this.lineWidth = lineWidth || this.lineWidth;
+    this.strokeStyle = strokeStyle || this.strokeStyle;
+    this.fillStyle = fillStyle || this.fillStyle;
+    this.ctx.arc(adjustedX, adjustedY, r * 80, sAngle, eAngle, counterclockwise); // TODO: fix!!
+    if (stroke) {
+      this.ctx.stroke();
+    }
+    if (fill) {
+      this.ctx.fill();
+    }
   }
 
   drawImage({
@@ -158,11 +217,9 @@ export default class Layer {
     y,
     width,
     height,
-    name,
   } = {}) {
-
     const cachedImage = this.images[src];
-    if(!cachedImage) {
+    if (!cachedImage) {
       const image = new Image();
       image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
       image.onload = () => this.ctx.drawImage(image, x, y, width, height);
