@@ -19,11 +19,13 @@
       layer.strokeStyle = "purple";
       layer.lineWidth = 2;
 
-      layer.addLine({ x1: 1, y1: 1, x2: 25, y2: 25 }); // TESTING
-      layer.addRect({ x: -2, y: -2, width: 1, height: 1, fill: true }); // TESTING
-      layer.addRect({ x: 0, y: 0, width: 2, height: 2 }); // TESTING
+      // TESTING
+      layer.addLine({ x1: 1, y1: 1, x2: 25, y2: 25 }); 
+      layer.addRect({ x: -2, y: -2, width: 1, height: 1, fill: true });
+      layer.addRect({ x: 0, y: 0, width: 2, height: 2 });
       layer.strokeStyle = "green";
-      layer.addRect({ x: 0, y: 0, width: 2, height: 2 });  // TESTING
+      layer.addRect({ x: 0, y: 0, width: 2, height: 2 });
+      layer.addArc({ x: 0, y: 0, r: 2, sAngle: 0, eAngle: Math.PI });
       layer.draw();
     }, false);
 

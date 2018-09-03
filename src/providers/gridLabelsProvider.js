@@ -90,10 +90,7 @@ export default class GridLabelsProvider {
       yRangeMinorAdjusted,
       xAxis,
       yAxis,
-      xStart,
       xEnd,
-      yStart,
-      yEnd,
     } = calcs;
 
     const isXAxis = (axis === "x");
@@ -275,23 +272,24 @@ export default class GridLabelsProvider {
         };
       });
 
-      labels.filter(l => !l.isHidden)
-      .forEach((label) => {
-        const {
-          currentX,
-          currentY,
-          text,
-          textBaseline,
-          textAlign,
-          style: textStyle,
-        } = label;
+      labels
+        .filter(l => !l.isHidden)
+        .forEach((label) => {
+          const {
+            currentX,
+            currentY,
+            text,
+            textBaseline,
+            textAlign,
+            style: textStyle,
+          } = label;
 
-        ctx.textBaseline = textBaseline;
-        ctx.textAlign = textAlign;
-        ctx.fillStyle = textStyle;
-        ctx.strokeText(text, currentX, currentY);
-        ctx.fillText(text, currentX, currentY);
-      });
+          ctx.textBaseline = textBaseline;
+          ctx.textAlign = textAlign;
+          ctx.fillStyle = textStyle;
+          ctx.strokeText(text, currentX, currentY);
+          ctx.fillText(text, currentX, currentY);
+        });
     }
   }
 }

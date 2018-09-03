@@ -35,9 +35,9 @@ export default class TopLayer extends Layer {
 
     const settingsElement = this.elements.find(x => x.name === "settings");
     settingsElement.x = left;
-    settingsElement.y = (l * 2) + m;    
+    settingsElement.y = (l * 2) + m;
   }
-  
+
   draw() {
     super.draw();
     this.isDirty = false;
