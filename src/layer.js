@@ -16,6 +16,7 @@ export default class Layer {
     this.yScaleToScreen = y => y * this.calcs.yScreenScale;
     this.elements = [];
     this.images = {};
+    this.transform = null;
 
     this.isDirty = true;
 
@@ -40,11 +41,13 @@ export default class Layer {
   }
 
   setCanvasContext(canvas, ctx) {
+    const { config } = this.graph;
+
     this.canvas = canvas;
     this.ctx = ctx;
 
     if (this.useNativeTransform) {
-
+      this.transform = config.transform;      
     }
   }
 
@@ -67,10 +70,22 @@ export default class Layer {
   }
 
   draw() {
-    //this.ctx.save();
-    //this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    //this.ctx.restore();
+    
+    if (this.useNativeTransform) {
+
+      console.log(this.calcs);
+
+      const { xScreenScale, yScreenScale, xOffset, yOffset } = this.calcs;
+      this.ctx.setTransform(xScreenScale,
+        0,
+        0,
+        -1 * yScreenScale,
+        xOffset * xScreenScale,
+        this.calcs.height - (yOffset * yScreenScale));
+    }
+
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
@@ -87,20 +102,9 @@ export default class Layer {
     });
   }
 
-  drawLine({
-    x1, y1, x2, y2, lineWidth, strokeStyle, useScreenCords = true,
-  } = {}) {
-    const adjustedX1 = useScreenCords ? this.xToScreen(x1) : x1;
-    const adjustedY1 = useScreenCords ? this.yToScreen(y1) : y1;
-    const adjustedX2 = useScreenCords ? this.xToScreen(x2) : x2;
-    const adjustedY2 = useScreenCords ? this.yToScreen(y2) : y2;
-
-    this.ctx.beginPath();
-    this.lineWidth = lineWidth || this.lineWidth;
-    this.strokeStyle = strokeStyle || this.strokeStyle;
-    this.ctx.moveTo(adjustedX1, adjustedY1);
-    this.ctx.lineTo(adjustedX2, adjustedY2);
-    this.ctx.stroke();
+  getAdjustedWidth() {
+    const { xScreenScale, yScreenScale } = this.calcs;
+    return Math.sqrt(xScreenScale ** 2, yScreenScale ** 2);
   }
 
   addLine(args) {
@@ -108,7 +112,6 @@ export default class Layer {
       type: "line",
       strokeStyle: args.strokeStyle || this.strokeStyle,
       lineWidth: args.lineWidth || this.lineWidth,
-      useScreenCords: args.useScreenCords !== undefined || true,
       ...args,
     };
     this.elements.push(element);
@@ -120,7 +123,6 @@ export default class Layer {
       strokeStyle: args.strokeStyle || this.strokeStyle,
       fillStyle: args.fillStyle || this.fillStyle,
       lineWidth: args.lineWidth || this.lineWidth,
-      useScreenCords: args.useScreenCords !== undefined || true,
       ...args,
     };
     this.elements.push(element);
@@ -132,7 +134,6 @@ export default class Layer {
       strokeStyle: args.strokeStyle || this.strokeStyle,
       fillStyle: args.fillStyle || this.fillStyle,
       lineWidth: args.lineWidth || this.lineWidth,
-      useScreenCords: args.useScreenCords !== undefined || true,
       ...args,
     };
     this.elements.push(element);
@@ -146,7 +147,6 @@ export default class Layer {
     this.elements.push(element);
   }
 
-
   drawRect({
     x,
     y,
@@ -157,17 +157,16 @@ export default class Layer {
     fillStyle,
     stroke = true,
     fill = false,
-    useScreenCords = true,
   } = {}) {
     const {
       adjustedX,
       adjustedY,
       adjustedWidth,
       adjustedHeight,
-    } = this.getAdjustedPointDimension(x, y, width, height, useScreenCords);
+    } = this.getAdjustedPointDimension(x, y, width, height);
 
     this.ctx.beginPath();
-    this.lineWidth = lineWidth || this.lineWidth;
+    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
     this.strokeStyle = strokeStyle || this.strokeStyle;
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
@@ -191,18 +190,17 @@ export default class Layer {
     fillStyle,
     stroke = true,
     fill = false,
-    useScreenCords = true,
   } = {}) {
     const {
       adjustedX,
       adjustedY,
-    } = this.getAdjustedPoint(x, y, useScreenCords);
+    } = this.getAdjustedPoint(x, y);
 
     this.ctx.beginPath();
-    this.lineWidth = lineWidth || this.lineWidth;
+    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
     this.strokeStyle = strokeStyle || this.strokeStyle;
     this.fillStyle = fillStyle || this.fillStyle;
-    this.ctx.arc(adjustedX, adjustedY, r * 80, sAngle, eAngle, counterclockwise); // TODO: fix!!
+    this.ctx.arc(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise); // TODO: fix!!
     if (stroke) {
       this.ctx.stroke();
     }
@@ -229,19 +227,35 @@ export default class Layer {
     }
   }
 
-  getAdjustedPointDimension(x, y, width, height, useScreenCords) {
+  drawLine({
+    x1, y1, x2, y2, lineWidth, strokeStyle,
+  } = {}) {
+    const adjustedX1 = !this.useNativeTransform ? this.xToScreen(x1) : x1;
+    const adjustedY1 = !this.useNativeTransform ? this.yToScreen(y1) : y1;
+    const adjustedX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
+    const adjustedY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
+
+    this.ctx.beginPath();
+    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+    this.strokeStyle = strokeStyle || this.strokeStyle;
+    this.ctx.moveTo(adjustedX1, adjustedY1);
+    this.ctx.lineTo(adjustedX2, adjustedY2);
+    this.ctx.stroke();
+  }
+
+  getAdjustedPointDimension(x, y, width, height) {
     return {
-      adjustedX: useScreenCords ? this.xToScreen(x) : x,
-      adjustedY: useScreenCords ? this.yToScreen(y) : y,
-      adjustedWidth: useScreenCords ? this.xScaleToScreen(width) : width,
-      adjustedHeight: useScreenCords ? this.yScaleToScreen(height) : height,
+      adjustedX: !this.useNativeTransform ? this.xToScreen(x) : x,
+      adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
+      adjustedWidth: !this.useNativeTransform ? this.xScaleToScreen(width) : width,
+      adjustedHeight: !this.useNativeTransform ? this.yScaleToScreen(height) : height,
     };
   }
 
-  getAdjustedPoint(x, y, useScreenCords) {
+  getAdjustedPoint(x, y) {
     return {
-      adjustedX: useScreenCords ? this.xToScreen(x) : x,
-      adjustedY: useScreenCords ? this.yToScreen(y) : y,
+      adjustedX: !this.useNativeTransform ? this.xToScreen(x) : x,
+      adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
     };
   }
 }
