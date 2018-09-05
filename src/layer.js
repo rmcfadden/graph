@@ -74,16 +74,13 @@ export default class Layer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
     if (this.useNativeTransform) {
-
-      console.log(this.calcs);
-
-      const { xScreenScale, yScreenScale, xOffset, yOffset } = this.calcs;
+      const { xScreenScale, yScreenScale, xOffset, yStart } = this.calcs;
       this.ctx.setTransform(xScreenScale,
         0,
         0,
         -1 * yScreenScale,
         xOffset * xScreenScale,
-        this.calcs.height - (yOffset * yScreenScale));
+        this.calcs.height + (yStart * yScreenScale));
     }
 
     this.elements.forEach((element) => {
@@ -170,6 +167,9 @@ export default class Layer {
     this.strokeStyle = strokeStyle || this.strokeStyle;
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+
+    //this.ctx.fillText("Big smile!", adjustedX, adjustedY);
+
     if (stroke) {
       this.ctx.stroke();
     }
