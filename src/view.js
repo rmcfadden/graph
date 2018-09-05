@@ -24,9 +24,10 @@ export default class View {
     };
 
     this.copyCanvasToOnScreenCanvas = (layer) => {
-      const { canvasName, canvas: offScreenCanvas } = layer;
+      const { canvasName, canvas: offScreenCanvas, ctx: offSceenCtx } = layer;
       const canvas = document.getElementById(canvasName);
       const ctx = canvas.getContext("2d");
+
       ctx.drawImage(offScreenCanvas, 0, 0);
       layer.setCanvasContext(canvas, ctx);
     };

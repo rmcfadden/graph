@@ -70,18 +70,20 @@ export default class Layer {
   }
 
   draw() {
+    this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.restore();
     
     if (this.useNativeTransform) {
-      const { xScreenScale, yScreenScale, xOffset, yStart } = this.calcs;
+      const { xScreenScale, yScreenScale, xOffset, yStart, yOffset, yMid } = this.calcs;
       this.ctx.setTransform(xScreenScale,
         0,
         0,
-        -1 * yScreenScale,
+        yScreenScale,
         xOffset * xScreenScale,
-        this.calcs.height + (yStart * yScreenScale));
-    }
+        (yOffset * yScreenScale));
+      }
 
     this.elements.forEach((element) => {
       if (element.type === "line") {
@@ -168,6 +170,8 @@ export default class Layer {
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
+    console.log(`rect. x:${adjustedX}, y:${adjustedY}, width:${adjustedWidth}, height:${adjustedHeight} `)
+
     //this.ctx.fillText("Big smile!", adjustedX, adjustedY);
 
     if (stroke) {
@@ -200,7 +204,7 @@ export default class Layer {
     this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
     this.strokeStyle = strokeStyle || this.strokeStyle;
     this.fillStyle = fillStyle || this.fillStyle;
-    this.ctx.arc(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise); // TODO: fix!!
+    this.ctx.arc(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
     if (stroke) {
       this.ctx.stroke();
     }
