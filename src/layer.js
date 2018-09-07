@@ -74,16 +74,16 @@ export default class Layer {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
-    
     if (this.useNativeTransform) {
-      const { xScreenScale, yScreenScale, xOffset, yStart, yOffset, yMid } = this.calcs;
+console.log(this.calcs);
+      const { xScreenScale, yScreenScale, xOffset, yDistance, yOffset } = this.calcs;
       this.ctx.setTransform(xScreenScale,
         0,
         0,
-        yScreenScale,
+        -1 * yScreenScale,
         xOffset * xScreenScale,
-        (yOffset * yScreenScale));
-      }
+        (yDistance * yScreenScale) - (yOffset * yScreenScale));
+    }
 
     this.elements.forEach((element) => {
       if (element.type === "line") {
@@ -170,8 +170,7 @@ export default class Layer {
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
-    console.log(`rect. x:${adjustedX}, y:${adjustedY}, width:${adjustedWidth}, height:${adjustedHeight} `)
-
+    //console.log(`rect. x:${adjustedX}, y:${adjustedY}, width:${adjustedWidth}, height:${adjustedHeight} `)
     //this.ctx.fillText("Big smile!", adjustedX, adjustedY);
 
     if (stroke) {
@@ -232,7 +231,12 @@ export default class Layer {
   }
 
   drawLine({
-    x1, y1, x2, y2, lineWidth, strokeStyle,
+    x1,
+    y1,
+    x2,
+    y2,
+    lineWidth,
+    strokeStyle,
   } = {}) {
     const adjustedX1 = !this.useNativeTransform ? this.xToScreen(x1) : x1;
     const adjustedY1 = !this.useNativeTransform ? this.yToScreen(y1) : y1;
