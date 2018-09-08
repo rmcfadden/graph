@@ -75,16 +75,15 @@ export default class Layer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
     if (this.useNativeTransform) {
-console.log(this.calcs);
-      const { xScreenScale, yScreenScale, xOffset, yDistance, yOffset } = this.calcs;
+      const { xScreenScale, yScreenScale, xOffset, yDistance, yOffset, yMid,yEnd } = this.calcs;
       this.ctx.setTransform(xScreenScale,
         0,
         0,
         -1 * yScreenScale,
         xOffset * xScreenScale,
-        (yDistance * yScreenScale) - (yOffset * yScreenScale));
+        (yOffset * yScreenScale));
     }
-
+    
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
@@ -98,6 +97,10 @@ console.log(this.calcs);
       if (element.type === "arc") {
         this.drawArc(element);
       }
+      if (element.type === "text") {
+        this.drawText(element);
+      }
+
     });
   }
 
@@ -105,6 +108,17 @@ console.log(this.calcs);
     const { xScreenScale, yScreenScale } = this.calcs;
     return Math.sqrt(xScreenScale ** 2, yScreenScale ** 2);
   }
+
+  addText(args) {
+    const element = {
+      type: "text",
+      strokeStyle: args.strokeStyle || this.strokeStyle,
+      lineWidth: args.lineWidth || this.lineWidth,
+      ...args,
+    };
+    this.elements.push(element);
+  }
+
 
   addLine(args) {
     const element = {
@@ -170,9 +184,6 @@ console.log(this.calcs);
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
-    //console.log(`rect. x:${adjustedX}, y:${adjustedY}, width:${adjustedWidth}, height:${adjustedHeight} `)
-    //this.ctx.fillText("Big smile!", adjustedX, adjustedY);
-
     if (stroke) {
       this.ctx.stroke();
     }
@@ -211,6 +222,44 @@ console.log(this.calcs);
       this.ctx.fill();
     }
   }
+
+  drawText({
+    x,
+    y,
+    text,
+    font = "64px Arial",
+    strokeStyle,
+    fillStyle,
+    stroke = true,
+    fill = false,
+  } = {}) {
+ 
+    const lastUseNativeTransform = this.useNativeTransform;
+    this.useNativeTransform = false;
+    const {
+      adjustedX,
+      adjustedY,
+    } = this.getAdjustedPoint(x, y);
+
+    this.ctx.save();
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    this.strokeStyle = strokeStyle || this.strokeStyle;
+    this.fillStyle = fillStyle || this.fillStyle;
+    this.ctx.font = font || this.font;
+
+    this.ctx.fillText(text, adjustedX, adjustedY);
+
+    if (stroke) {
+      this.ctx.strokeText(text, adjustedX, adjustedY);
+    }
+    if (fill) {
+      this.ctx.fillText(text, adjustedX, adjustedY);
+    }
+      this.ctx.restore();
+    this.useNativeTransform = lastUseNativeTransform;
+  }
+
 
   drawImage({
     src,
