@@ -31,14 +31,14 @@
 
       layer.addText({ x: 0, y: 0, text: "Testing" });
 
-
       layer.addArc({ x: 0, y: 0, r: 100, sAngle: 0, eAngle: Math.PI * 2 });
       layer.addArc({ x: 0, y: 0, r: 200, sAngle: 0, eAngle: Math.PI * 2 });
       layer.addArc({ x: 0, y: 0, r: 500, sAngle: 0, eAngle: Math.PI * 2 });
+
       layer.addArc({ x: 0, y: 0, r: 10000, sAngle: 0, eAngle: Math.PI * 2 });
       layer.addArc({ x: 0, y: 0, r: 100000, sAngle: 0, eAngle: Math.PI * 2 });
-      layer.addArc({ x: 0, y: 0, r: 1000000, sAngle: 0, eAngle: Math.PI * 2 });
-
+      // TODO: figure why the arc below fills the entire screen at certain zoom
+      //layer.addArc({ x: 0, y: 0, r: 10000000, sAngle: 0, eAngle: Math.PI * 2 }); 
       layer.draw();
     }, false);
 

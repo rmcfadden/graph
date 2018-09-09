@@ -18,6 +18,7 @@ export default class Layer {
     this.images = {};
     this.transform = null;
 
+    this.usingPath = false;
     this.isDirty = true;
 
     this.isInBounds = (p) => {
@@ -74,6 +75,7 @@ export default class Layer {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
+
     if (this.useNativeTransform) {
       const { xScreenScale, yScreenScale, xOffset, yDistance, yOffset, yMid,yEnd } = this.calcs;
       this.ctx.setTransform(xScreenScale,
@@ -100,7 +102,6 @@ export default class Layer {
       if (element.type === "text") {
         this.drawText(element);
       }
-
     });
   }
 
@@ -109,55 +110,50 @@ export default class Layer {
     return Math.sqrt(xScreenScale ** 2, yScreenScale ** 2);
   }
 
-  addText(args) {
-    const element = {
-      type: "text",
-      strokeStyle: args.strokeStyle || this.strokeStyle,
-      lineWidth: args.lineWidth || this.lineWidth,
-      ...args,
-    };
-    this.elements.push(element);
+  startPath() {
+    this.usingPath = true;
   }
 
+  stroke() {
+    this.ctx.stroke();
+    this.usingPath = false;
+  }
+
+  fill() {
+    this.ctx.fill();
+    this.usingPath = false;
+  }
+
+  addText(args) {
+    return this.addElement({ type: "text", ...args });
+  }
 
   addLine(args) {
-    const element = {
-      type: "line",
-      strokeStyle: args.strokeStyle || this.strokeStyle,
-      lineWidth: args.lineWidth || this.lineWidth,
-      ...args,
-    };
-    this.elements.push(element);
+    return this.addElement({ type: "line", ...args });
   }
 
   addRect(args) {
-    const element = {
-      type: "rect",
-      strokeStyle: args.strokeStyle || this.strokeStyle,
-      fillStyle: args.fillStyle || this.fillStyle,
-      lineWidth: args.lineWidth || this.lineWidth,
-      ...args,
-    };
-    this.elements.push(element);
+    return this.addElement({ type: "rect", ...args });
   }
 
   addArc(args) {
+    return this.addElement({ type: "arc", ...args });
+  }
+
+  addImage(args) {
+    return this.addElement({ type: "image", ...args });
+  }
+
+  addElement(args) {
     const element = {
-      type: "arc",
+      type: args.type,
       strokeStyle: args.strokeStyle || this.strokeStyle,
       fillStyle: args.fillStyle || this.fillStyle,
       lineWidth: args.lineWidth || this.lineWidth,
       ...args,
     };
     this.elements.push(element);
-  }
-
-  addImage(args) {
-    const element = {
-      type: "image",
-      ...args,
-    };
-    this.elements.push(element);
+    return element;
   }
 
   drawRect({
@@ -178,16 +174,19 @@ export default class Layer {
       adjustedHeight,
     } = this.getAdjustedPointDimension(x, y, width, height);
 
-    this.ctx.beginPath();
-    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-    this.strokeStyle = strokeStyle || this.strokeStyle;
-    this.fillStyle = fillStyle || this.fillStyle;
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+      this.strokeStyle = strokeStyle || this.strokeStyle;
+      this.fillStyle = fillStyle || this.fillStyle;
+    }
+    
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
-    if (stroke) {
+    if (!this.usingPath && stroke) {
       this.ctx.stroke();
     }
-    if (fill) {
+    if (!this.usingPath && fill) {
       this.ctx.fill();
     }
   }
@@ -210,15 +209,19 @@ export default class Layer {
       adjustedY,
     } = this.getAdjustedPoint(x, y);
 
-    this.ctx.beginPath();
-    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-    this.strokeStyle = strokeStyle || this.strokeStyle;
-    this.fillStyle = fillStyle || this.fillStyle;
-    this.ctx.arc(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
-    if (stroke) {
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+      this.strokeStyle = strokeStyle || this.strokeStyle;
+      this.fillStyle = fillStyle || this.fillStyle;
+    }
+
+    this.arcImproved(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
+
+    if (!this.usingPath && stroke) {
       this.ctx.stroke();
     }
-    if (fill) {
+    if (!this.usingPath && fill) {
       this.ctx.fill();
     }
   }
@@ -230,8 +233,8 @@ export default class Layer {
     font = "64px Arial",
     strokeStyle,
     fillStyle,
-    stroke = true,
-    fill = false,
+    stroke = false,
+    fill = true,
   } = {}) {
  
     const lastUseNativeTransform = this.useNativeTransform;
@@ -248,15 +251,13 @@ export default class Layer {
     this.fillStyle = fillStyle || this.fillStyle;
     this.ctx.font = font || this.font;
 
-    this.ctx.fillText(text, adjustedX, adjustedY);
-
     if (stroke) {
       this.ctx.strokeText(text, adjustedX, adjustedY);
     }
     if (fill) {
       this.ctx.fillText(text, adjustedX, adjustedY);
     }
-      this.ctx.restore();
+    this.ctx.restore();
     this.useNativeTransform = lastUseNativeTransform;
   }
 
@@ -292,12 +293,18 @@ export default class Layer {
     const adjustedX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
     const adjustedY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
 
-    this.ctx.beginPath();
-    this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-    this.strokeStyle = strokeStyle || this.strokeStyle;
+    if(!this.usingPath) {
+      this.ctx.beginPath();
+      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+      this.strokeStyle = strokeStyle || this.strokeStyle;
+    }
+
     this.ctx.moveTo(adjustedX1, adjustedY1);
     this.ctx.lineTo(adjustedX2, adjustedY2);
-    this.ctx.stroke();
+    
+    if(!this.usingPath) {
+      this.ctx.stroke();
+    }
   }
 
   getAdjustedPointDimension(x, y, width, height) {
@@ -315,4 +322,22 @@ export default class Layer {
       adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
     };
   }
+  
+  arcImproved(x, y, r) {
+    const m = 0.551784;
+  
+    this.ctx.save()
+    this.ctx.translate(x, y)
+    this.ctx.scale(r, r)
+  
+    this.ctx.beginPath()
+    this.ctx.moveTo(1, 0)
+    this.ctx.bezierCurveTo(1,  -m,  m, -1,  0, -1)
+    this.ctx.bezierCurveTo(-m, -1, -1, -m, -1,  0)
+    this.ctx.bezierCurveTo(-1,  m, -m,  1,  0,  1)
+    this.ctx.bezierCurveTo( m,  1,  1,  m,  1,  0)
+    this.ctx.closePath()
+    this.ctx.restore()
+  }
+
 }
