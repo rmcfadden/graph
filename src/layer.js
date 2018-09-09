@@ -102,6 +102,10 @@ export default class Layer {
       if (element.type === "text") {
         this.drawText(element);
       }
+
+      if (element.type === "beziercurve") {
+        this.drawBezierCurve(element);
+      }
     });
   }
 
@@ -144,6 +148,11 @@ export default class Layer {
     return this.addElement({ type: "image", ...args });
   }
 
+  addBezierCurve(args) {
+    return this.addElement({ type: "beziercurve", ...args });
+  }
+
+
   addElement(args) {
     const element = {
       type: args.type,
@@ -182,6 +191,41 @@ export default class Layer {
     }
     
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+
+    if (!this.usingPath && stroke) {
+      this.ctx.stroke();
+    }
+    if (!this.usingPath && fill) {
+      this.ctx.fill();
+    }
+  }
+
+  drawBezierCurve({
+    x,
+    y,
+    r,
+    sAngle,
+    eAngle,
+    counterclockwise = false,
+    lineWidth,
+    strokeStyle,
+    fillStyle,
+    stroke = true,
+    fill = false,
+  } = {}) {
+    const {
+      adjustedX,
+      adjustedY,
+    } = this.getAdjustedPoint(x, y);
+
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+      this.strokeStyle = strokeStyle || this.strokeStyle;
+      this.fillStyle = fillStyle || this.fillStyle;
+    }
+
+    this.arcImproved(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
 
     if (!this.usingPath && stroke) {
       this.ctx.stroke();
@@ -260,7 +304,6 @@ export default class Layer {
     this.ctx.restore();
     this.useNativeTransform = lastUseNativeTransform;
   }
-
 
   drawImage({
     src,
