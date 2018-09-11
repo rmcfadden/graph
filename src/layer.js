@@ -77,7 +77,7 @@ export default class Layer {
     this.ctx.restore();
 
     if (this.useNativeTransform) {
-      const { xScreenScale, yScreenScale, xOffset, yDistance, yOffset, yMid,yEnd } = this.calcs;
+      const { xScreenScale, yScreenScale, xOffset, yOffset } = this.calcs;
       this.ctx.setTransform(xScreenScale,
         0,
         0,
@@ -105,6 +105,10 @@ export default class Layer {
 
       if (element.type === "beziercurve") {
         this.drawBezierCurve(element);
+      }
+
+      if (element.type === "quadraticcurve") {
+        this.addQuadraticCurve(element);
       }
     });
   }
@@ -152,6 +156,9 @@ export default class Layer {
     return this.addElement({ type: "beziercurve", ...args });
   }
 
+  addQuadraticCurve(args) {
+    return this.addElement({ type: "quadraticcurve", ...args });
+  }
 
   addElement(args) {
     const element = {
@@ -189,7 +196,7 @@ export default class Layer {
       this.strokeStyle = strokeStyle || this.strokeStyle;
       this.fillStyle = fillStyle || this.fillStyle;
     }
-    
+
     this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
     if (!this.usingPath && stroke) {
@@ -203,10 +210,6 @@ export default class Layer {
   drawBezierCurve({
     x,
     y,
-    r,
-    sAngle,
-    eAngle,
-    counterclockwise = false,
     lineWidth,
     strokeStyle,
     fillStyle,
@@ -225,7 +228,7 @@ export default class Layer {
       this.fillStyle = fillStyle || this.fillStyle;
     }
 
-    this.arcImproved(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
+    // TODO
 
     if (!this.usingPath && stroke) {
       this.ctx.stroke();
@@ -234,6 +237,44 @@ export default class Layer {
       this.ctx.fill();
     }
   }
+
+  drawQuadraticCurve({
+    cpx,
+    cpy,
+    x,
+    y,
+    lineWidth,
+    strokeStyle,
+    fillStyle,
+    stroke = true,
+    fill = false,
+  } = {}) {
+    const {
+      adjustedCpX,
+      adjustedCpY,
+    } = this.getAdjustedPoint(cpx, cpy);
+    const {
+      adjustedX,
+      adjustedY,
+    } = this.getAdjustedPoint(x, y);
+
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
+      this.strokeStyle = strokeStyle || this.strokeStyle;
+      this.fillStyle = fillStyle || this.fillStyle;
+    }
+
+    this.ctx.quadraticCurveTo(adjustedCpX, adjustedCpY, adjustedX, adjustedY);
+
+    if (!this.usingPath && stroke) {
+      this.ctx.stroke();
+    }
+    if (!this.usingPath && fill) {
+      this.ctx.fill();
+    }
+  }
+
 
   drawArc({
     x,
@@ -280,7 +321,6 @@ export default class Layer {
     stroke = false,
     fill = true,
   } = {}) {
- 
     const lastUseNativeTransform = this.useNativeTransform;
     this.useNativeTransform = false;
     const {
@@ -336,7 +376,7 @@ export default class Layer {
     const adjustedX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
     const adjustedY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
 
-    if(!this.usingPath) {
+    if (!this.usingPath) {
       this.ctx.beginPath();
       this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
       this.strokeStyle = strokeStyle || this.strokeStyle;
@@ -344,8 +384,8 @@ export default class Layer {
 
     this.ctx.moveTo(adjustedX1, adjustedY1);
     this.ctx.lineTo(adjustedX2, adjustedY2);
-    
-    if(!this.usingPath) {
+
+    if (!this.usingPath) {
       this.ctx.stroke();
     }
   }
@@ -365,22 +405,19 @@ export default class Layer {
       adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
     };
   }
-  
+
   arcImproved(x, y, r) {
     const m = 0.551784;
-  
-    this.ctx.save()
-    this.ctx.translate(x, y)
-    this.ctx.scale(r, r)
-  
-    this.ctx.beginPath()
-    this.ctx.moveTo(1, 0)
-    this.ctx.bezierCurveTo(1,  -m,  m, -1,  0, -1)
-    this.ctx.bezierCurveTo(-m, -1, -1, -m, -1,  0)
-    this.ctx.bezierCurveTo(-1,  m, -m,  1,  0,  1)
-    this.ctx.bezierCurveTo( m,  1,  1,  m,  1,  0)
-    this.ctx.closePath()
-    this.ctx.restore()
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.scale(r, r);
+    this.ctx.beginPath();
+    this.ctx.moveTo(1, 0);
+    this.ctx.bezierCurveTo(1,  -m,  m, -1,  0, -1);
+    this.ctx.bezierCurveTo(-m, -1, -1, -m, -1,  0);
+    this.ctx.bezierCurveTo(-1,  m, -m,  1,  0,  1);
+    this.ctx.bezierCurveTo(m,  1,  1,  m,  1,  0);
+    this.ctx.closePath();
+    this.ctx.restore();
   }
-
 }

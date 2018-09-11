@@ -41,11 +41,19 @@
       layer.addArc({ x: 0, y: 0, r: 10000000, sAngle: 0, eAngle: Math.PI * 2 }); 
       layer.draw();
 
+      const start = -1000;
+      const end = 1000;
+      const points = new Array(end - start + 1)
+        .fill(undefined).map((_, i) => ({ x: i + start, y: Math.sin(i + start) }));
+
+console.log(points);
+
       // Sin wave
-      for(let x = -1000; x < 1000; x++)
+      points.forEach(p => 
       {
-        const y =Math.sin(x);
-      }
+        layer.addQuadraticCurve({ x, y});
+      })
+
 
     }, false);
 
