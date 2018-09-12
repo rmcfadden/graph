@@ -1,5 +1,6 @@
 import Calcs from "./calcs";
 import Utils from "./utils";
+import { runInThisContext } from "vm";
 
 export default class Layer {
   constructor(args) {
@@ -17,7 +18,6 @@ export default class Layer {
     this.elements = [];
     this.images = {};
     this.transform = null;
-
     this.usingPath = false;
     this.isDirty = true;
 
@@ -48,7 +48,7 @@ export default class Layer {
     this.ctx = ctx;
 
     if (this.useNativeTransform) {
-      this.transform = config.transform;      
+      this.transform = config.transform;
     }
   }
 
@@ -63,6 +63,10 @@ export default class Layer {
   get fillStyle() { return this.ctx.fillStyle; }
 
   set fillStyle(fillStyle) { this.ctx.fillStyle = fillStyle; }
+
+  get font() { return this.ctx.font; }
+
+  set font(font) { this.ctx.font = font; }
 
   layout() {
   }
@@ -85,7 +89,7 @@ export default class Layer {
         xOffset * xScreenScale,
         (yOffset * yScreenScale));
     }
-    
+
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
@@ -102,13 +106,14 @@ export default class Layer {
       if (element.type === "text") {
         this.drawText(element);
       }
-
       if (element.type === "beziercurve") {
         this.drawBezierCurve(element);
       }
-
       if (element.type === "quadraticcurve") {
-        this.addQuadraticCurve(element);
+        this.drawQuadraticCurve(element);
+      }
+      if (element.type === "quadraticspline") {
+        this.drawQuadraticSpline(element);
       }
     });
   }
@@ -160,12 +165,24 @@ export default class Layer {
     return this.addElement({ type: "quadraticcurve", ...args });
   }
 
+  addQuadraticSpline(args) {
+    return this.addElement({ type: "quadraticspline", ...args });
+  }
+
   addElement(args) {
+    const options = {
+      lineWidth: (args.lineWidth || this.lineWidth) / this.getAdjustedWidth(),
+      strokeStyle: args.strokeStyle !== undefined || this.strokeStyle,
+      fillStyle: args.fillStyle !== undefined || this.fillStyle,
+      font: args.font !== undefined || this.font,
+      stroke: args.stroke || true,
+      fill: args.fill,
+    };
+
     const element = {
+      name: args.name,
       type: args.type,
-      strokeStyle: args.strokeStyle || this.strokeStyle,
-      fillStyle: args.fillStyle || this.fillStyle,
-      lineWidth: args.lineWidth || this.lineWidth,
+      options,
       ...args,
     };
     this.elements.push(element);
@@ -177,27 +194,21 @@ export default class Layer {
     y,
     width,
     height,
-    lineWidth,
-    strokeStyle,
-    fillStyle,
-    stroke = true,
-    fill = false,
+    options = {},
   } = {}) {
+    const { stroke, fill } = options;
     const {
-      adjustedX,
-      adjustedY,
-      adjustedWidth,
-      adjustedHeight,
+      aX,
+      aY,
+      aWidth,
+      aHeight,
     } = this.getAdjustedPointDimension(x, y, width, height);
 
     if (!this.usingPath) {
       this.ctx.beginPath();
-      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-      this.strokeStyle = strokeStyle || this.strokeStyle;
-      this.fillStyle = fillStyle || this.fillStyle;
     }
 
-    this.ctx.rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+    this.ctx.rect(aX, aY, aWidth, aHeight);
 
     if (!this.usingPath && stroke) {
       this.ctx.stroke();
@@ -207,74 +218,19 @@ export default class Layer {
     }
   }
 
-  drawBezierCurve({
-    x,
-    y,
-    lineWidth,
-    strokeStyle,
-    fillStyle,
-    stroke = true,
-    fill = false,
-  } = {}) {
+  applyOptions(options) {
     const {
-      adjustedX,
-      adjustedY,
-    } = this.getAdjustedPoint(x, y);
+      lineWidth,
+      strokeStyle,
+      fillStyle,
+      font,
+    } = options;
 
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-      this.strokeStyle = strokeStyle || this.strokeStyle;
-      this.fillStyle = fillStyle || this.fillStyle;
-    }
-
-    // TODO
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
+    this.ctx.lineWidth = lineWidth || this.lineWidth;
+    this.ctx.strokeStyle = strokeStyle || this.strokeStyle;
+    this.ctx.fillStyle = fillStyle || this.fillStyle;
+    this.ctx.font = font || this.font;
   }
-
-  drawQuadraticCurve({
-    cpx,
-    cpy,
-    x,
-    y,
-    lineWidth,
-    strokeStyle,
-    fillStyle,
-    stroke = true,
-    fill = false,
-  } = {}) {
-    const {
-      adjustedCpX,
-      adjustedCpY,
-    } = this.getAdjustedPoint(cpx, cpy);
-    const {
-      adjustedX,
-      adjustedY,
-    } = this.getAdjustedPoint(x, y);
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-      this.strokeStyle = strokeStyle || this.strokeStyle;
-      this.fillStyle = fillStyle || this.fillStyle;
-    }
-
-    this.ctx.quadraticCurveTo(adjustedCpX, adjustedCpY, adjustedX, adjustedY);
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
-  }
-
 
   drawArc({
     x,
@@ -283,25 +239,20 @@ export default class Layer {
     sAngle,
     eAngle,
     counterclockwise = false,
-    lineWidth,
-    strokeStyle,
-    fillStyle,
-    stroke = true,
-    fill = false,
+    options = {},
   } = {}) {
+    const { stroke, fill, lineWidth } = options;
     const {
-      adjustedX,
-      adjustedY,
+      aX,
+      aY,
     } = this.getAdjustedPoint(x, y);
 
     if (!this.usingPath) {
       this.ctx.beginPath();
-      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-      this.strokeStyle = strokeStyle || this.strokeStyle;
-      this.fillStyle = fillStyle || this.fillStyle;
+      this.applyOptions(options);
     }
 
-    this.arcImproved(adjustedX, adjustedY, r, sAngle, eAngle, counterclockwise);
+    this.ctx.arc(aX, aY, r, sAngle, eAngle, counterclockwise);
 
     if (!this.usingPath && stroke) {
       this.ctx.stroke();
@@ -315,31 +266,28 @@ export default class Layer {
     x,
     y,
     text,
-    font = "64px Arial",
-    strokeStyle,
-    fillStyle,
-    stroke = false,
-    fill = true,
+    options = {
+      fill: true,
+    },
   } = {}) {
+    const { stroke, fill } = options;
     const lastUseNativeTransform = this.useNativeTransform;
     this.useNativeTransform = false;
     const {
-      adjustedX,
-      adjustedY,
+      aX,
+      aY,
     } = this.getAdjustedPoint(x, y);
 
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    this.strokeStyle = strokeStyle || this.strokeStyle;
-    this.fillStyle = fillStyle || this.fillStyle;
-    this.ctx.font = font || this.font;
+    this.applyOptions(options);
 
     if (stroke) {
-      this.ctx.strokeText(text, adjustedX, adjustedY);
+      this.ctx.strokeText(text, aX, aY);
     }
-    if (fill) {
-      this.ctx.fillText(text, adjustedX, adjustedY);
+    if (fill !== false) {
+      this.ctx.fillText(text, aX, aY);
     }
     this.ctx.restore();
     this.useNativeTransform = lastUseNativeTransform;
@@ -368,56 +316,131 @@ export default class Layer {
     y1,
     x2,
     y2,
-    lineWidth,
-    strokeStyle,
+    options = {},
   } = {}) {
-    const adjustedX1 = !this.useNativeTransform ? this.xToScreen(x1) : x1;
-    const adjustedY1 = !this.useNativeTransform ? this.yToScreen(y1) : y1;
-    const adjustedX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
-    const adjustedY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
+    const aX1 = !this.useNativeTransform ? this.xToScreen(x1) : x1;
+    const aY1 = !this.useNativeTransform ? this.yToScreen(y1) : y1;
+    const aX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
+    const aY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
 
     if (!this.usingPath) {
       this.ctx.beginPath();
-      this.lineWidth = (lineWidth || this.lineWidth) / this.getAdjustedWidth();
-      this.strokeStyle = strokeStyle || this.strokeStyle;
+      this.applyOptions(options);
     }
 
-    this.ctx.moveTo(adjustedX1, adjustedY1);
-    this.ctx.lineTo(adjustedX2, adjustedY2);
+    this.ctx.moveTo(aX1, aY1);
+    this.ctx.lineTo(aX2, aY2);
 
     if (!this.usingPath) {
       this.ctx.stroke();
     }
   }
 
+  drawBezierCurve({
+    x,
+    y,
+    options = {},
+  } = {}) {
+    const { stroke, fill, lineWidth } = options;
+    const {
+      aX,
+      aY,
+    } = this.getAdjustedPoint(x, y);
+
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.applyOptions(options);
+    }
+
+    // TODO
+
+    if (!this.usingPath && stroke) {
+      this.ctx.stroke();
+    }
+    if (!this.usingPath && fill) {
+      this.ctx.fill();
+    }
+  }
+
+  drawQuadraticCurve({
+    cpx,
+    cpy,
+    x,
+    y,
+    options = {},
+  } = {}) {
+    const { stroke, fill, lineWidth } = options;
+    const {
+      adjustedCpX,
+      adjustedCpY,
+    } = this.getAdjustedPoint(cpx, cpy);
+    const {
+      aX,
+      aY,
+    } = this.getAdjustedPoint(x, y);
+
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.applyOptions(options);
+    }
+
+    this.ctx.quadraticCurveTo(adjustedCpX, adjustedCpY, aX, aY);
+
+    if (!this.usingPath && stroke) {
+      this.ctx.stroke();
+    }
+    if (!this.usingPath && fill) {
+      this.ctx.fill();
+    }
+  }
+
+
+  drawQuadraticSpline({
+    points,
+    options = {},
+  } = {}) {
+    const { stroke, fill, lineWidth } = options;
+    if (!this.usingPath) {
+      this.ctx.beginPath();
+      this.applyOptions(options);
+    }
+
+    const { aX, aY } = this.getAdjustedPoint(points[0].x, points[0].y);
+    this.ctx.moveTo(aX, aY);
+
+    for (let i = 1; i < points.length - 2; i += 1) {
+      const { aX: aX1, aY: aY1 } = this.getAdjustedPoint(points[i].x, points[i].y);
+      const { aX: aX2, aY: aY2 } = this.getAdjustedPoint(points[i + 1].x, points[i + 1].y);
+      const xc = (aX1 + aX2) / 2;
+      const yc = (aY1 + aY2) / 2;
+
+console.log(`xc: ${xc}, yc: ${yc}, aX1: ${aX1}, aX2: ${aX2}`);
+      this.ctx.quadraticCurveTo(aX1, aX2, xc, yc);
+    }
+
+    //this.ctx.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x,points[i+1].y);
+
+    if (!this.usingPath && stroke) {
+      this.ctx.stroke();
+    }
+    if (!this.usingPath && fill) {
+      this.ctx.fill();
+    }
+  }
+
   getAdjustedPointDimension(x, y, width, height) {
     return {
-      adjustedX: !this.useNativeTransform ? this.xToScreen(x) : x,
-      adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
-      adjustedWidth: !this.useNativeTransform ? this.xScaleToScreen(width) : width,
-      adjustedHeight: !this.useNativeTransform ? this.yScaleToScreen(height) : height,
+      aX: !this.useNativeTransform ? this.xToScreen(x) : x,
+      aY: !this.useNativeTransform ? this.yToScreen(y) : y,
+      aWidth: !this.useNativeTransform ? this.xScaleToScreen(width) : width,
+      aHeight: !this.useNativeTransform ? this.yScaleToScreen(height) : height,
     };
   }
 
   getAdjustedPoint(x, y) {
     return {
-      adjustedX: !this.useNativeTransform ? this.xToScreen(x) : x,
-      adjustedY: !this.useNativeTransform ? this.yToScreen(y) : y,
+      aX: !this.useNativeTransform ? this.xToScreen(x) : x,
+      aY: !this.useNativeTransform ? this.yToScreen(y) : y,
     };
-  }
-
-  arcImproved(x, y, r) {
-    const m = 0.551784;
-    this.ctx.save();
-    this.ctx.translate(x, y);
-    this.ctx.scale(r, r);
-    this.ctx.beginPath();
-    this.ctx.moveTo(1, 0);
-    this.ctx.bezierCurveTo(1,  -m,  m, -1,  0, -1);
-    this.ctx.bezierCurveTo(-m, -1, -1, -m, -1,  0);
-    this.ctx.bezierCurveTo(-1,  m, -m,  1,  0,  1);
-    this.ctx.bezierCurveTo(m,  1,  1,  m,  1,  0);
-    this.ctx.closePath();
-    this.ctx.restore();
   }
 }
