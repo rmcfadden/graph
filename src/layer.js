@@ -1,6 +1,5 @@
 import Calcs from "./calcs";
 import Utils from "./utils";
-import { runInThisContext } from "vm";
 
 export default class Layer {
   constructor(args) {
@@ -113,7 +112,10 @@ export default class Layer {
         this.drawQuadraticCurve(element);
       }
       if (element.type === "quadraticspline") {
-        this.drawQuadraticSpline(element);
+        this.drawQuadraticOrLinearSpline(element);
+      }
+      if (element.type === "linearspline") {
+        this.drawQuadraticOrLinearSpline({ type: "linear", ...element });
       }
     });
   }
@@ -168,6 +170,11 @@ export default class Layer {
   addQuadraticSpline(args) {
     return this.addElement({ type: "quadraticspline", ...args });
   }
+
+  addLinearSpline(args) {
+    return this.addElement({ type: "linearpline", ...args });
+  }
+
 
   addElement(args) {
     const options = {
@@ -395,11 +402,12 @@ export default class Layer {
   }
 
 
-  drawQuadraticSpline({
+  drawQuadraticOrLinearSpline({
     points,
+    curveType = "quadratic",
     options = {},
   } = {}) {
-    const { stroke, fill, lineWidth } = options;
+    const { stroke, fill } = options;
     if (!this.usingPath) {
       this.ctx.beginPath();
       this.applyOptions(options);
@@ -408,17 +416,16 @@ export default class Layer {
     const { aX, aY } = this.getAdjustedPoint(points[0].x, points[0].y);
     this.ctx.moveTo(aX, aY);
 
-    for (let i = 1; i < points.length - 2; i += 1) {
+    let i = 1;
+    for (; i < points.length - 1; i += 1) {
       const { aX: aX1, aY: aY1 } = this.getAdjustedPoint(points[i].x, points[i].y);
       const { aX: aX2, aY: aY2 } = this.getAdjustedPoint(points[i + 1].x, points[i + 1].y);
       const xc = (aX1 + aX2) / 2;
       const yc = (aY1 + aY2) / 2;
 
-console.log(`xc: ${xc}, yc: ${yc}, aX1: ${aX1}, aX2: ${aX2}`);
-      this.ctx.quadraticCurveTo(aX1, aX2, xc, yc);
+      const curveName = (curveType === "quadratic") ? "quadraticCurveTo" : "lineTo";
+      this.ctx[curveName](aX1, aY1, xc, yc);
     }
-
-    //this.ctx.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x,points[i+1].y);
 
     if (!this.usingPath && stroke) {
       this.ctx.stroke();
