@@ -4,11 +4,10 @@ export default class providerFactory {
   }
 
   create(name) {
-    const provider = this.providers[name];
-    return provider;
+    return this.providers[name];
   }
 
-  register(provider) {
-    this.providers[provider.name] = provider;
+  register(name, provider) {
+    this.providers[name] = provider;
   }
 }

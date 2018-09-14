@@ -21,7 +21,7 @@
 
       // TESTING
       layer.addLine({ x1: 1, y1: 1, x2: 25, y2: 25 }); 
-      layer.addRect({ x: -2, y: -2, width: 1, height: 1, options: { fill: true } });
+      layer.addRect({ x: -2, y: -2, width: 1, height: 1, fill: true });
       layer.addRect({ x: 0, y: 0, width: 2, height: 2 });
       layer.strokeStyle = "green";
       layer.addRect({ x: 0, y: 0, width: 3, height: 3 });
@@ -49,7 +49,6 @@
         .fill(undefined).map((_, i) => ({ x: (i * increment) + start, y: Math.sin((i * increment) + start) }));
 
       layer.addQuadraticSpline({ points });
-
       layer.draw();
 
     }, false);

@@ -1,5 +1,6 @@
 import Calcs from "./calcs";
 import Utils from "./utils";
+import ElementProviderFactory from "./providers/elementProviderFactory";
 
 export default class Layer {
   constructor(args) {
@@ -8,6 +9,8 @@ export default class Layer {
     this.graph = this.view.graph;
     this.calcs = new Calcs();
     this.useNativeTransform = args.useNativeTransform || false;
+    this.scaleLineWidth = args.scaleLineWidth || true;
+    
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
     this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
@@ -89,15 +92,17 @@ export default class Layer {
         (yOffset * yScreenScale));
     }
 
+    const factory = new ElementProviderFactory();
+
     this.elements.forEach((element) => {
       if (element.type === "line") {
         this.drawLine(element);
       }
-      if (element.type === "rect") {
-        this.drawRect(element);
+      if (element.type === "rectangle") {
+        factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "image") {
-        this.drawImage(element);
+        factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "arc") {
         this.drawArc(element);
@@ -148,7 +153,7 @@ export default class Layer {
   }
 
   addRect(args) {
-    return this.addElement({ type: "rect", ...args });
+    return this.addElement({ type: "rectangle", ...args });
   }
 
   addArc(args) {
@@ -172,13 +177,15 @@ export default class Layer {
   }
 
   addLinearSpline(args) {
-    return this.addElement({ type: "linearpline", ...args });
+    return this.addElement({ type: "linearspline", ...args });
   }
 
 
   addElement(args) {
     const options = {
-      lineWidth: (args.lineWidth || this.lineWidth) / this.getAdjustedWidth(),
+      lineWidth: args.lineWidth !== undefined || this.lineWidth,
+      scaleLineWidth: args.scaleLineWidth !== undefined ? args.scaleLineWidth
+        : this.scaleLineWidth,
       strokeStyle: args.strokeStyle !== undefined || this.strokeStyle,
       fillStyle: args.fillStyle !== undefined || this.fillStyle,
       font: args.font !== undefined || this.font,
@@ -196,44 +203,22 @@ export default class Layer {
     return element;
   }
 
-  drawRect({
-    x,
-    y,
-    width,
-    height,
-    options = {},
-  } = {}) {
-    const { stroke, fill } = options;
-    const {
-      aX,
-      aY,
-      aWidth,
-      aHeight,
-    } = this.getAdjustedPointDimension(x, y, width, height);
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-    }
-
-    this.ctx.rect(aX, aY, aWidth, aHeight);
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
-  }
 
   applyOptions(options) {
     const {
       lineWidth,
+      scaleLineWidth,
       strokeStyle,
       fillStyle,
       font,
     } = options;
+    
+    // TODO: figure out lineWidth scaling
+    const currentLineWidth = lineWidth || this.lineWidth;
+    const currentScaleLineWidth = scaleLineWidth !== undefined ? scaleLineWidth : this.scaleLineWidth;
+    this.ctx.lineWidth = currentScaleLineWidth ? currentLineWidth / this.getAdjustedWidth()
+      : currentLineWidth;
 
-    this.ctx.lineWidth = lineWidth || this.lineWidth;
     this.ctx.strokeStyle = strokeStyle || this.strokeStyle;
     this.ctx.fillStyle = fillStyle || this.fillStyle;
     this.ctx.font = font || this.font;
@@ -248,7 +233,7 @@ export default class Layer {
     counterclockwise = false,
     options = {},
   } = {}) {
-    const { stroke, fill, lineWidth } = options;
+    const { stroke, fill } = options;
     const {
       aX,
       aY,
@@ -300,23 +285,6 @@ export default class Layer {
     this.useNativeTransform = lastUseNativeTransform;
   }
 
-  drawImage({
-    src,
-    x,
-    y,
-    width,
-    height,
-  } = {}) {
-    const cachedImage = this.images[src];
-    if (!cachedImage) {
-      const image = new Image();
-      image.src = `data:image/svg+xml; charset=utf-8, ${src}`;
-      image.onload = () => this.ctx.drawImage(image, x, y, width, height);
-      this.images[src] = image;
-    } else {
-      this.ctx.drawImage(cachedImage, x, y, width, height);
-    }
-  }
 
   drawLine({
     x1,
@@ -348,7 +316,7 @@ export default class Layer {
     y,
     options = {},
   } = {}) {
-    const { stroke, fill, lineWidth } = options;
+    const { stroke, fill } = options;
     const {
       aX,
       aY,
@@ -368,39 +336,6 @@ export default class Layer {
       this.ctx.fill();
     }
   }
-
-  drawQuadraticCurve({
-    cpx,
-    cpy,
-    x,
-    y,
-    options = {},
-  } = {}) {
-    const { stroke, fill, lineWidth } = options;
-    const {
-      adjustedCpX,
-      adjustedCpY,
-    } = this.getAdjustedPoint(cpx, cpy);
-    const {
-      aX,
-      aY,
-    } = this.getAdjustedPoint(x, y);
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.applyOptions(options);
-    }
-
-    this.ctx.quadraticCurveTo(adjustedCpX, adjustedCpY, aX, aY);
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
-  }
-
 
   drawQuadraticOrLinearSpline({
     points,
