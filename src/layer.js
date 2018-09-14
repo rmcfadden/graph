@@ -96,7 +96,7 @@ export default class Layer {
 
     this.elements.forEach((element) => {
       if (element.type === "line") {
-        this.drawLine(element);
+        factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "rectangle") {
         factory.create(element.type).draw({ layer: this, ...element });
@@ -105,10 +105,10 @@ export default class Layer {
         factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "arc") {
-        this.drawArc(element);
+        factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "text") {
-        this.drawText(element);
+        factory.create(element.type).draw({ layer: this, ...element });
       }
       if (element.type === "beziercurve") {
         this.drawBezierCurve(element);
@@ -203,7 +203,6 @@ export default class Layer {
     return element;
   }
 
-
   applyOptions(options) {
     const {
       lineWidth,
@@ -222,93 +221,6 @@ export default class Layer {
     this.ctx.strokeStyle = strokeStyle || this.strokeStyle;
     this.ctx.fillStyle = fillStyle || this.fillStyle;
     this.ctx.font = font || this.font;
-  }
-
-  drawArc({
-    x,
-    y,
-    r,
-    sAngle,
-    eAngle,
-    counterclockwise = false,
-    options = {},
-  } = {}) {
-    const { stroke, fill } = options;
-    const {
-      aX,
-      aY,
-    } = this.getAdjustedPoint(x, y);
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.applyOptions(options);
-    }
-
-    this.ctx.arc(aX, aY, r, sAngle, eAngle, counterclockwise);
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
-  }
-
-  drawText({
-    x,
-    y,
-    text,
-    options = {
-      fill: true,
-    },
-  } = {}) {
-    const { stroke, fill } = options;
-    const lastUseNativeTransform = this.useNativeTransform;
-    this.useNativeTransform = false;
-    const {
-      aX,
-      aY,
-    } = this.getAdjustedPoint(x, y);
-
-    this.ctx.save();
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    this.applyOptions(options);
-
-    if (stroke) {
-      this.ctx.strokeText(text, aX, aY);
-    }
-    if (fill !== false) {
-      this.ctx.fillText(text, aX, aY);
-    }
-    this.ctx.restore();
-    this.useNativeTransform = lastUseNativeTransform;
-  }
-
-
-  drawLine({
-    x1,
-    y1,
-    x2,
-    y2,
-    options = {},
-  } = {}) {
-    const aX1 = !this.useNativeTransform ? this.xToScreen(x1) : x1;
-    const aY1 = !this.useNativeTransform ? this.yToScreen(y1) : y1;
-    const aX2 = !this.useNativeTransform ? this.xToScreen(x2) : x2;
-    const aY2 = !this.useNativeTransform ? this.yToScreen(y2) : y2;
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.applyOptions(options);
-    }
-
-    this.ctx.moveTo(aX1, aY1);
-    this.ctx.lineTo(aX2, aY2);
-
-    if (!this.usingPath) {
-      this.ctx.stroke();
-    }
   }
 
   drawBezierCurve({
