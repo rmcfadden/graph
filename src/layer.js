@@ -10,6 +10,7 @@ export default class Layer {
     this.calcs = new Calcs();
     this.useNativeTransform = args.useNativeTransform || false;
     this.scaleLineWidth = args.scaleLineWidth || true;
+    this.factory = new ElementProviderFactory();
     
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
@@ -74,8 +75,12 @@ export default class Layer {
   }
 
   load() {
+    Object.keys(this.factory.providers).forEach( (p) => {
+      const addFunctionName = `add${p}`;
+      this[addFunctionName] = (args) => this.addElement({ type: p, ...args });
+    });
   }
-
+  
   draw() {
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -92,36 +97,10 @@ export default class Layer {
         (yOffset * yScreenScale));
     }
 
-    const factory = new ElementProviderFactory();
-
     this.elements.forEach((element) => {
-      if (element.type === "line") {
-        factory.create(element.type).draw({ layer: this, ...element });
-      }
-      if (element.type === "rectangle") {
-        factory.create(element.type).draw({ layer: this, ...element });
-      }
-      if (element.type === "image") {
-        factory.create(element.type).draw({ layer: this, ...element });
-      }
-      if (element.type === "arc") {
-        factory.create(element.type).draw({ layer: this, ...element });
-      }
-      if (element.type === "text") {
-        factory.create(element.type).draw({ layer: this, ...element });
-      }
-      if (element.type === "beziercurve") {
-        this.drawBezierCurve(element);
-      }
-      if (element.type === "quadraticcurve") {
-        this.drawQuadraticCurve(element);
-      }
-      if (element.type === "quadraticspline") {
-        this.drawQuadraticOrLinearSpline(element);
-      }
-      if (element.type === "linearspline") {
-        this.drawQuadraticOrLinearSpline({ type: "linear", ...element });
-      }
+      const elementProvider = this.factory.create(element.type);
+      if (!elementProvider) { throw Error(`Element provider ${element.type} not found`); }
+      elementProvider.draw({ layer: this, ...element });
     });
   }
 
@@ -143,43 +122,6 @@ export default class Layer {
     this.ctx.fill();
     this.usingPath = false;
   }
-
-  addText(args) {
-    return this.addElement({ type: "text", ...args });
-  }
-
-  addLine(args) {
-    return this.addElement({ type: "line", ...args });
-  }
-
-  addRect(args) {
-    return this.addElement({ type: "rectangle", ...args });
-  }
-
-  addArc(args) {
-    return this.addElement({ type: "arc", ...args });
-  }
-
-  addImage(args) {
-    return this.addElement({ type: "image", ...args });
-  }
-
-  addBezierCurve(args) {
-    return this.addElement({ type: "beziercurve", ...args });
-  }
-
-  addQuadraticCurve(args) {
-    return this.addElement({ type: "quadraticcurve", ...args });
-  }
-
-  addQuadraticSpline(args) {
-    return this.addElement({ type: "quadraticspline", ...args });
-  }
-
-  addLinearSpline(args) {
-    return this.addElement({ type: "linearspline", ...args });
-  }
-
 
   addElement(args) {
     const options = {
@@ -211,75 +153,16 @@ export default class Layer {
       fillStyle,
       font,
     } = options;
-    
     // TODO: figure out lineWidth scaling
     const currentLineWidth = lineWidth || this.lineWidth;
-    const currentScaleLineWidth = scaleLineWidth !== undefined ? scaleLineWidth : this.scaleLineWidth;
+    const currentScaleLineWidth = scaleLineWidth !== undefined ? 
+      scaleLineWidth : this.scaleLineWidth;
     this.ctx.lineWidth = currentScaleLineWidth ? currentLineWidth / this.getAdjustedWidth()
       : currentLineWidth;
 
     this.ctx.strokeStyle = strokeStyle || this.strokeStyle;
     this.ctx.fillStyle = fillStyle || this.fillStyle;
     this.ctx.font = font || this.font;
-  }
-
-  drawBezierCurve({
-    x,
-    y,
-    options = {},
-  } = {}) {
-    const { stroke, fill } = options;
-    const {
-      aX,
-      aY,
-    } = this.getAdjustedPoint(x, y);
-
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.applyOptions(options);
-    }
-
-    // TODO
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
-  }
-
-  drawQuadraticOrLinearSpline({
-    points,
-    curveType = "quadratic",
-    options = {},
-  } = {}) {
-    const { stroke, fill } = options;
-    if (!this.usingPath) {
-      this.ctx.beginPath();
-      this.applyOptions(options);
-    }
-
-    const { aX, aY } = this.getAdjustedPoint(points[0].x, points[0].y);
-    this.ctx.moveTo(aX, aY);
-
-    let i = 1;
-    for (; i < points.length - 1; i += 1) {
-      const { aX: aX1, aY: aY1 } = this.getAdjustedPoint(points[i].x, points[i].y);
-      const { aX: aX2, aY: aY2 } = this.getAdjustedPoint(points[i + 1].x, points[i + 1].y);
-      const xc = (aX1 + aX2) / 2;
-      const yc = (aY1 + aY2) / 2;
-
-      const curveName = (curveType === "quadratic") ? "quadraticCurveTo" : "lineTo";
-      this.ctx[curveName](aX1, aY1, xc, yc);
-    }
-
-    if (!this.usingPath && stroke) {
-      this.ctx.stroke();
-    }
-    if (!this.usingPath && fill) {
-      this.ctx.fill();
-    }
   }
 
   getAdjustedPointDimension(x, y, width, height) {

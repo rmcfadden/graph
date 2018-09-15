@@ -12,6 +12,7 @@ export default class TopLayer extends Layer {
   }
 
   load() {
+    super.load(); 
     const l = 35;
     const m = 5;
     const left = this.canvas.width - (m + l);
