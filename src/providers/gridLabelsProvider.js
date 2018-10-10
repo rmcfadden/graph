@@ -164,7 +164,6 @@ export default class GridLabelsProvider {
 
       const labels = adjustedLabelMeasures.map((l) => {
         const { v, text, metrics, length, isHidden } = l;
-
         let adjustedVerticalPosition = verticalPosition;
         let adjustedHorizontalPosition = horizontalPosition;
 

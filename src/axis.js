@@ -6,6 +6,7 @@ export default class Axis {
     end = 5.5,
     majorGrid = new Grid({ step: 0.5, style: "#000000" }),
     minorGrid = new Grid({ step: 0.1, style: "lightgrey", width: 0.5 }),
+    drawArrow = true,
   } = {}) {
     this.start = start;
     this.end = end;
@@ -14,5 +15,6 @@ export default class Axis {
     this.style = "#000000";
     this.majorGrid = majorGrid;
     this.minorGrid = minorGrid;
+    this.drawArrow = drawArrow;
   }
 }

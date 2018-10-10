@@ -43,11 +43,11 @@
 //layer.addArc({ x: 0, y: 0, r: 100000, sAngle: 0, eAngle: Math.PI * 2 });
 
       // Draw a Sin Wave
-      const start = -100;
-      const end = 100;
+      const start = -10;
+      const end = 10;
       const increment = .1;
       const points = new Array((end * 1 / increment) - (start * 1 / increment) + 1)
-        .fill(undefined).map((_, i) => ({ x: (i * increment) + start, y: Math.sin((i * increment) + start) }));
+        .fill(undefined).map((_, i) => ({ x: (i * increment) + start, y: Math.sin((i * increment * 2) + start) }));
 
       layer.addQuadraticSpline({ points });
       layer.draw();

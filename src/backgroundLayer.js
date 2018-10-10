@@ -7,8 +7,8 @@ export default class BackgroundLayer extends Layer {
   }
 
   draw() {
-    //super.draw();
-    //this.drawBackground();
+    super.draw();
+    this.drawBackground();
   }
 
   drawBackground() {

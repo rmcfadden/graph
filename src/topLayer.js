@@ -12,7 +12,7 @@ export default class TopLayer extends Layer {
   }
 
   load() {
-    super.load(); 
+    super.load();
     const l = 35;
     const m = 5;
     const left = this.canvas.width - (m + l);
@@ -161,8 +161,11 @@ export default class TopLayer extends Layer {
 
   Zoom(args) {
     const { transform } = this.graph.config;
-    // transform.xOffset = xMid;
-    // transform.yOffset = yMid;
+    const { xMid, yMid } = this.calcs;
+    console.log(`xMid: ${xMid}, yMid: ${yMid}`);
+
+    transform.xOffset += xMid / 2;
+    transform.yOffset += yMid / 2;
 
     transform.xScale = args.xScale;
     transform.yScale = args.yScale;

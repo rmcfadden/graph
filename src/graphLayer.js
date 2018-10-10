@@ -2,8 +2,6 @@ import Layer from "./layer";
 import AxesProvider from "./providers/axesProvider";
 import GridProvider from "./providers/gridProvider";
 import GridLabelsProvider from "./providers/gridLabelsProvider";
-import ShapesProvider from "./providers/shapesProvider";
-
 
 export default class GraphLayer extends Layer {
   constructor(args) {
