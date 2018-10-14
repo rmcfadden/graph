@@ -164,8 +164,8 @@ export default class TopLayer extends Layer {
     const { xMid, yMid } = this.calcs;
     console.log(`xMid: ${xMid}, yMid: ${yMid}`);
 
-    transform.xOffset += xMid / 2;
-    transform.yOffset += yMid / 2;
+    //transform.xOffset += xMid / 2;
+    //transform.yOffset += yMid / 2;
 
     transform.xScale = args.xScale;
     transform.yScale = args.yScale;

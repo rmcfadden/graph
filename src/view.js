@@ -49,7 +49,7 @@ export default class View {
     this.setSelectedLayer("content");
 
     window.onresize = () => {
-      this.layers.forEach((l) => (l.isDirty = true ));
+      this.layers.forEach((l) => { l.isDirty = true; });
       this.draw();
     };
     window.onorientationchange = window.onresize;

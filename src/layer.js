@@ -75,9 +75,9 @@ export default class Layer {
   }
 
   load() {
-    Object.keys(this.factory.providers).forEach( (p) => {
+    Object.keys(this.factory.providers).forEach((p) => {
       const addFunctionName = `add${p}`;
-      this[addFunctionName] = (args) => this.addElement({ type: p, ...args });
+      this[addFunctionName] = args => this.addElement({ type: p, ...args });
     });
   }
   
