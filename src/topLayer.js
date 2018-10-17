@@ -162,10 +162,10 @@ export default class TopLayer extends Layer {
   Zoom(args) {
     const { transform } = this.graph.config;
     const { xMid, yMid } = this.calcs;
-    console.log(`xMid: ${xMid}, yMid: ${yMid}`);
+console.log(`xMid: ${xMid}, yMid: ${yMid}, args.xScale: ${args.xScale}, args.yScale: ${args.yScale}`);
 
-    //transform.xOffset += xMid / 2;
-    //transform.yOffset += yMid / 2;
+    transform.xOffset -= (xMid * args.xScale);
+    //transform.yOffset -= yMid * args.yScale;
 
     transform.xScale = args.xScale;
     transform.yScale = args.yScale;
