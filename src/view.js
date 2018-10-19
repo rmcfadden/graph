@@ -24,10 +24,9 @@ export default class View {
     };
 
     this.copyCanvasToOnScreenCanvas = (layer) => {
-      const { canvasName, canvas: offScreenCanvas, ctx: offSceenCtx } = layer;
+      const { canvasName, canvas: offScreenCanvas } = layer;
       const canvas = document.getElementById(canvasName);
       const ctx = canvas.getContext("2d");
-
       ctx.drawImage(offScreenCanvas, 0, 0);
       layer.setCanvasContext(canvas, ctx);
     };
@@ -49,7 +48,7 @@ export default class View {
     this.setSelectedLayer("content");
 
     window.onresize = () => {
-      this.layers.forEach((l) => { l.isDirty = true; });
+      this.layers.forEach(l => l.setDirty());
       this.draw();
     };
     window.onorientationchange = window.onresize;
@@ -123,6 +122,7 @@ export default class View {
 
   layout() {
     this.calcs = this.preCalculations();
+console.log(this.calcs);
     this.layers.forEach((l) => {
       this.setLayerDimentions(l);
       l.calcs = this.calcs;

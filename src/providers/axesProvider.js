@@ -35,16 +35,16 @@ export default class AxesProvider {
 
       ctx.lineWidth = 1;
       const arrowheadRight = new Arrowhead({ width: 15, height: 15, direction: "right" });
-      arrowheadRight.pos(layer.xToScreen(xEnd) - 15, layer.yToScreen(0) - 7.5);
+      arrowheadRight.pos(layer.xToScreen(xEnd) - 15, layer.yToScreen(0) - 7);
 
       const arrowheadLeft = new Arrowhead({ width: 15, height: 15, direction: "left" });
-      arrowheadLeft.pos(layer.xToScreen(xStart), layer.yToScreen(0) - 7.5);
+      arrowheadLeft.pos(layer.xToScreen(xStart), layer.yToScreen(0) - 7);
 
       const arrowheadTop = new Arrowhead({ width: 15, height: 15, direction: "top" });
-      arrowheadTop.pos(layer.xToScreen(0) - 7.5, layer.yToScreen(yEnd));
+      arrowheadTop.pos(layer.xToScreen(0) - 8, layer.yToScreen(yEnd));
 
       const arrowheadBottom = new Arrowhead({ width: 15, height: 15, direction: "bottom" });
-      arrowheadBottom.pos(layer.xToScreen(0) - 7.5, layer.yToScreen(yStart) - 15);
+      arrowheadBottom.pos(layer.xToScreen(0) - 8, layer.yToScreen(yStart) - 15);
 
       const shapesProv = new ShapesProvider({ ctx });
       shapesProv.draw(arrowheadRight);
