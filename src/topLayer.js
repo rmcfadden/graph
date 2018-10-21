@@ -84,7 +84,6 @@ export default class TopLayer extends Layer {
       const diffX = e.offsetX - x;
       const diffY = y - e.offsetY;
       const { transform } = this.graph.config;
-      const { xScale, yScale } = transform;
       const {
         xDistance,
         yDistance,
@@ -94,8 +93,8 @@ export default class TopLayer extends Layer {
 
       const changeX = diffX / width;
       const changeY = diffY / height;
-      const xOffset = xDistance * changeX / xScale;
-      const yOffset = yDistance * changeY / yScale;
+      const xOffset = xDistance * changeX;
+      const yOffset = yDistance * changeY;
 
       transform.xOffset = xOffset;
       transform.yOffset = yOffset;
@@ -161,12 +160,6 @@ export default class TopLayer extends Layer {
 
   Zoom(args) {
     const { transform } = this.graph.config;
-    const { xMid, yMid } = this.calcs;
-console.log(`xMid: ${xMid}, yMid: ${yMid}, args.xScale: ${args.xScale}, args.yScale: ${args.yScale}`);
-
-    //transform.xOffset -= (xMid * args.xScale);
-    //transform.yOffset -= yMid * args.yScale;
-
     transform.xScale = args.xScale;
     transform.yScale = args.yScale;
     this.view.draw();

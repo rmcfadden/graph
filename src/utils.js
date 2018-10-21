@@ -43,10 +43,9 @@ export default class Utils {
       xScale,
       yScale,
     } = transform;
-
     return {
-      x: (p.x + xOffset) * xScale,
-      y: (p.y + yOffset) * yScale,
+      x: (p.x * xScale) + xOffset,
+      y: (p.y * yScale) + yOffset,
     };
   }
 

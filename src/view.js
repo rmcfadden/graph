@@ -122,7 +122,6 @@ export default class View {
 
   layout() {
     this.calcs = this.preCalculations();
-console.log(this.calcs);
     this.layers.forEach((l) => {
       this.setLayerDimentions(l);
       l.calcs = this.calcs;
