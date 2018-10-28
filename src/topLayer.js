@@ -98,16 +98,13 @@ export default class TopLayer extends Layer {
 
       transform.xOffset = xOffset;
       transform.yOffset = yOffset;
+
       this.view.draw();
     };
 
     this.canvas.onmousewheel = (e) => {
       const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-      if (delta > 0) {
-        this.ZoomIn();
-      } else {
-        this.ZoomOut();
-      }
+      (delta > 0) ? this.ZoomIn() : this.ZoomOut();
     };
 
     this.canvas.ontouchstart = () => {};

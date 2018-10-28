@@ -1,36 +1,42 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es6": true,
-        "mocha": true,
-        "node": true
-    },
-    "extends": "airbnb",
-    "parserOptions": {
-        "ecmaVersion": 2015,
-        "sourceType": "module"
-    },
-    "rules": {
-        "indent": [
-            "error",
-            2,
-            { "SwitchCase": 1 }
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "object-curly-newline": [
-            "off"
-        ]
-    }
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "mocha": true,
+    "node": true
+  },
+  "extends": "airbnb",
+  "parserOptions": {
+    "ecmaVersion": 2015,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": [
+      "error",
+      2, { 
+        "SwitchCase": 1 
+      }
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "object-curly-newline": [
+      "off"
+    ],
+    "no-unused-expressions": [
+      "error", { 
+        "allowTernary": true
+      }
+    ]
+  }
 }
