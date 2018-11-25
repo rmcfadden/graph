@@ -1,11 +1,11 @@
 import Shape from "./shape";
 
-export default class Arrowhead extends Shape {
+export default class Triangle extends Shape {
   constructor(args) {
     super();
     this.points = [];
 
-    this.create = (width, height) => {
+    this.create = (width, height, direction) => {
       switch (direction) {
         case "right": return this.createRight(width, height);
         case "left": return this.createLeft(width, height);

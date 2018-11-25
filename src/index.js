@@ -1,1 +1,1 @@
-module.exports = require("./graph").default;
+export default require("./graph").default;

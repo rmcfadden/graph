@@ -32,7 +32,7 @@ export default class View {
     };
 
     this.getCanvasName = (id, name) => `canvas-${id}-${name}`;
-
+    
     const backgroundLayer = new BackgroundLayer({ view: this, name: "background" });
     this.addLayer(backgroundLayer);
 
