@@ -11,7 +11,7 @@ export default class Layer {
     this.useNativeTransform = args.useNativeTransform || false;
     this.scaleLineWidth = args.scaleLineWidth || true;
     this.factory = new ElementProviderFactory();
-    
+
     this.xToScreen = x => this.calcs.xScreenScale * (x + this.calcs.xOffset);
     this.yToScreen = y => this.calcs.yScreenScale * (this.calcs.yOffset - y);
     this.screenToX = x => (x / this.calcs.xScreenScale) - this.calcs.xOffset;
